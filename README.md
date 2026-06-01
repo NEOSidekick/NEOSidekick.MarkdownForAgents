@@ -11,7 +11,7 @@ HTML experience unchanged for browsers. Agents can request Markdown either via a
 your content correctly out of the box; add a dedicated renderer only where the
 result needs improvement.
 
-Also check out our just launchen [NEOSidekick cms content editing agent v3](https://neosidekick.com/)
+Also check out our just launched [NEOSidekick cms content editing agent v3](https://neosidekick.com/)
 
 ## Why Markdown
 
