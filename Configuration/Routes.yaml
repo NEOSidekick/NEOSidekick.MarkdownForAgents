@@ -1,0 +1,30 @@
+# The site root has an empty path segment, so "{node}.md" would render the homepage
+# as "/.md", which many web servers reject. This site-node-only route serves it as
+# "/index.md" instead.
+-
+  name: 'Markdown for Agents - Homepage'
+  uriPattern: '{node}index.md'
+  defaults:
+    '@package': 'Neos.Neos'
+    '@controller': 'Frontend\Node'
+    '@format': 'markdown'
+    '@action': 'show'
+  routeParts:
+    node:
+      handler: Neos\Neos\Routing\FrontendNodeRoutePartHandlerInterface
+      options:
+        onlyMatchSiteNodes: true
+  appendExceedingArguments: true
+
+-
+  name: 'Markdown for Agents'
+  uriPattern: '{node}.md'
+  defaults:
+    '@package': 'Neos.Neos'
+    '@controller': 'Frontend\Node'
+    '@format': 'markdown'
+    '@action': 'show'
+  routeParts:
+    node:
+      handler: Neos\Neos\Routing\FrontendNodeRoutePartHandlerInterface
+  appendExceedingArguments: true

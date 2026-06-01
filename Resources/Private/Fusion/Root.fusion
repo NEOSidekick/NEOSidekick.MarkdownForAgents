@@ -1,0 +1,9 @@
+include: **/*.fusion
+
+root {
+    markdownFormat {
+        @position = 'before format'
+        condition = ${request.format == 'markdown'}
+        type = 'NEOSidekick.MarkdownForAgents:DocumentResponse'
+    }
+}

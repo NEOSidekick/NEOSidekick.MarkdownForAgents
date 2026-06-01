@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file original="" product-name="NEOSidekick.MarkdownForAgents" source-language="en" datatype="plaintext">
+        <body>
+            <trans-unit id="groups.agentsContentSignals" xml:space="preserve">
+                <source>Agents Content Signals</source>
+            </trans-unit>
+            <trans-unit id="properties.contentSignalAiTrain" xml:space="preserve">
+                <source>Allow AI Training</source>
+            </trans-unit>
+            <trans-unit id="properties.contentSignalAiTrain.ui.help.message" xml:space="preserve">
+                <source>Allow crawlers to use site content for training or fine-tuning AI models. Renders ai-train=yes when enabled, ai-train=no when disabled.</source>
+            </trans-unit>
+            <trans-unit id="properties.contentSignalSearch" xml:space="preserve">
+                <source>Allow Search</source>
+            </trans-unit>
+            <trans-unit id="properties.contentSignalSearch.ui.help.message" xml:space="preserve">
+                <source>Allow crawlers to build a search index and provide search results with hyperlinks and short excerpts. Search does not include AI-generated search summaries.</source>
+            </trans-unit>
+            <trans-unit id="properties.contentSignalAiInput" xml:space="preserve">
+                <source>Allow AI Input</source>
+            </trans-unit>
+            <trans-unit id="properties.contentSignalAiInput.ui.help.message" xml:space="preserve">
+                <source>Allow crawlers to input site content into AI models for retrieval augmented generation, grounding, or real-time generative AI search answers.</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

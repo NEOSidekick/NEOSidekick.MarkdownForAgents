@@ -1,0 +1,11 @@
+prototype(Neos.Seo:RobotsTxt) {
+    data {
+        contentSignal = Neos.Fusion:Join {
+            @glue = ', '
+            1 = ${'Content-Signal: ai-train=' + (!!q(site).property('contentSignalAiTrain') ? 'yes' : 'no')}
+            2 = ${'search=' + (!!q(site).property('contentSignalSearch') ? 'yes' : 'no')}
+            3 = ${'ai-input=' + (!!q(site).property('contentSignalAiInput') ? 'yes' : 'no')}
+            @position = 'after userAgentAll'
+        }
+    }
+}

@@ -1,0 +1,80 @@
+{
+    "name": "neosidekick/markdown-for-agents",
+    "description": "Markdown rendering for AI agents in Neos CMS",
+    "type": "neos-plugin",
+    "license": "GPL-3.0-or-later",
+    "keywords": [
+        "flow",
+        "neos",
+        "fusion",
+        "markdown",
+        "ai",
+        "agents"
+    ],
+    "require": {
+        "php": "^8.0",
+        "neos/neos": "~8.4 || dev-master",
+        "neos/seo": "^3.2",
+        "league/html-to-markdown": "^5.1",
+        "symfony/dom-crawler": "^5.4 || ^6.0",
+        "symfony/css-selector": "^5.4 || ^6.0"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10.0",
+        "squizlabs/php_codesniffer": "^3.7",
+        "phpunit/phpunit": "^9.5"
+    },
+    "authors": [
+        {
+            "name": "Roland Schütz",
+            "email": "rs@codeq.at",
+            "homepage": "https://codeq.at",
+            "role": "Developer"
+        },
+        {
+            "name": "Felix Gradinaru",
+            "email": "fg@codeq.at",
+            "homepage": "https://codeq.at",
+            "role": "Developer"
+        }
+    ],
+    "archive": {
+        "exclude": [
+            ".editorconfig",
+            ".gitattributes",
+            ".github",
+            ".gitignore"
+        ]
+    },
+    "autoload": {
+        "psr-4": {
+            "NEOSidekick\\MarkdownForAgents\\": "Classes"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NEOSidekick\\MarkdownForAgents\\Tests\\": "Tests"
+        }
+    },
+    "extra": {
+        "neos": {
+            "package-key": "NEOSidekick.MarkdownForAgents"
+        },
+        "applied-flow-migrations": []
+    },
+    "scripts": {
+        "fix:style": "phpcbf --colors --standard=PSR12 Classes",
+        "fix": [
+            "@fix:style"
+        ],
+        "test:style": "phpcs --colors -n --standard=PSR12 Classes",
+        "test:stan": "phpstan -v analyse Classes",
+        "test:unit": "phpunit --configuration Tests/UnitTests.xml",
+        "cc": "phpstan clear cache",
+        "test": [
+            "@test:style",
+            "@test:stan",
+            "@test:unit"
+        ]
+    }
+}

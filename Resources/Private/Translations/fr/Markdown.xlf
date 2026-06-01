@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file original="" source-language="en" target-language="fr" datatype="plaintext">
+        <body>
+            <trans-unit id="formNotice" xml:space="preserve">
+                <source>A form can be found at</source>
+                <target>Un formulaire se trouve sur cette page</target>
+            </trans-unit>
+            <trans-unit id="iframeFallback" xml:space="preserve">
+                <source>Embedded content</source>
+                <target>Contenu intégré</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

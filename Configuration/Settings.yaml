@@ -1,0 +1,46 @@
+NEOSidekick:
+  MarkdownForAgents:
+    htmlContentSimplifier:
+      # The booleans below are global fallback defaults. A per-call option passed
+      # to the Eel helper (e.g. NEOSidekickMarkdown.htmlToMarkdown(html, {removeLinks: true}))
+      # always overrides the matching setting for that single conversion.
+      #
+      # Keep images without alt text by default; agents can still fetch and
+      # analyse them. Set to false to drop them as decorative noise.
+      keepEmptyAltImages: true
+      # Remove the configured navigationSelectors before conversion.
+      removeNavigation: true
+      # Strip href attributes before conversion. Off by default so agents keep
+      # followable links.
+      removeLinks: false
+      # Selector => true. Downstream projects add their own keys or unset a
+      # default by overriding its value to false.
+      # Navigation selectors are only removed when removeNavigation is enabled (default).
+      navigationSelectors:
+        'nav': true
+        '[role*="navigation"]': true
+        '.navigation': true
+        '.navi': true
+        '.navbox': true
+      removeSelectors:
+        # Page chrome
+        'header': true
+        'footer': true
+        'head': true
+        '.head': true
+        '.header': true
+        '.footer': true
+        '.cookie-dialog': true
+        # Content should be skipped
+        'svg': true
+        'source': true
+        # iframe and form are deliberately absent: HtmlContentSimplifier turns them
+        # into links. Use data-markdown-skip to drop individual ones.
+        'script': true
+        'style': true
+        '[aria-hidden="true"]': true
+        # Compatibility with NEOSidekick.AiAssistant attributes for skipping content
+        '[data-sidekick-skip]': true
+        '[data-neosidekick-skip]': true
+        # New attribute for skipping content in Markdown
+        '[data-markdown-skip]': true

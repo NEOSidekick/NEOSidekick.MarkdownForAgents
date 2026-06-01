@@ -1,0 +1,33 @@
+prototype(NEOSidekick.MarkdownForAgents:DocumentResponse) < prototype(Neos.Fusion:Http.Message) {
+    prototype(Neos.Neos:NodeUri) {
+        absolute = true
+    }
+
+    prototype(Neos.Neos:ConvertUris) {
+        absolute = true
+    }
+
+    httpResponseHead {
+        headers.Content-Type = 'text/markdown; charset=utf-8'
+        headers.Vary = 'Accept'
+        headers.Link = Neos.Neos:NodeUri {
+            node = ${documentNode}
+            absolute = true
+            format = 'html'
+            @process.wrapAsLinkHeader = ${'<' + value + '>; rel="canonical"'}
+        }
+    }
+
+    body = NEOSidekick.MarkdownForAgents:MarkdownRenderer {
+        type = ${q(documentNode).property('_nodeType.name')}
+        suffix = '.Markdown'
+        title = ${q(documentNode).property('title') || q(documentNode).property('_label')}
+        canonicalUri = Neos.Neos:NodeUri {
+            node = ${documentNode}
+            absolute = true
+            format = 'html'
+        }
+        formNoticeLabel = ${Translation.translate('formNotice', 'A form can be found at', [], 'Markdown', 'NEOSidekick.MarkdownForAgents')}
+        iframeFallbackLabel = ${Translation.translate('iframeFallback', 'Embedded content', [], 'Markdown', 'NEOSidekick.MarkdownForAgents')}
+    }
+}

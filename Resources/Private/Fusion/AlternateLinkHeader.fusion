@@ -1,0 +1,9 @@
+prototype(Neos.Neos:Page) {
+    httpResponseHead.headers.Link = Neos.Neos:NodeUri {
+        node = ${documentNode}
+        absolute = true
+        format = 'markdown'
+        @process.wrapAsLinkHeader = ${'<' + value + '>; rel="alternate"; type="text/markdown"'}
+        @if.notInBackend = ${!documentNode.context.inBackend}
+    }
+}

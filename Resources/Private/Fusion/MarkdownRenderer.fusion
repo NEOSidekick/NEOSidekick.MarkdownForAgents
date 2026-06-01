@@ -1,0 +1,10 @@
+prototype(NEOSidekick.MarkdownForAgents:MarkdownRenderer) {
+    @class = 'NEOSidekick\\MarkdownForAgents\\Fusion\\MarkdownRendererImplementation'
+    type = null
+    suffix = '.Markdown'
+    fallbackToHtml = true
+    title = ''
+    canonicalUri = ''
+    formNoticeLabel = 'A form can be found at'
+    iframeFallbackLabel = 'Embedded content'
+}

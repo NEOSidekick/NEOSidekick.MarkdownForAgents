@@ -1,0 +1,23 @@
+Neos:
+  Fusion:
+    defaultContext:
+      NEOSidekickMarkdown: 'NEOSidekick\MarkdownForAgents\EelHelper\MarkdownHelper'
+  Neos:
+    fusion:
+      autoInclude:
+        NEOSidekick.MarkdownForAgents: true
+    userInterface:
+      translation:
+        autoInclude:
+          NEOSidekick.MarkdownForAgents:
+            - 'NodeTypes/*'
+  Flow:
+    http:
+      middlewares:
+        markdownForAgentsContentNegotiation:
+          position: 'after routing'
+          middleware: 'NEOSidekick\MarkdownForAgents\Http\MarkdownContentNegotiationMiddleware'
+    mvc:
+      routes:
+        'NEOSidekick.MarkdownForAgents':
+          position: 'before Neos.Neos'
