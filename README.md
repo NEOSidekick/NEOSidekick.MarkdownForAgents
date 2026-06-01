@@ -286,8 +286,8 @@ Recommended structure for dedicated Markdown output:
 
 When no `.Markdown` prototype exists, the renderer falls back to the normal HTML
 Fusion prototype and converts that HTML with `league/html-to-markdown`. During
-conversion the package also turns HTML tables into Markdown tables and strips
-`iframe`/`form` elements.
+conversion the package also turns HTML tables into Markdown tables. `iframe` and
+`form` elements are rewritten as followable links rather than stripped (see above).
 
 Before conversion, `HtmlContentSimplifier` removes generic page chrome. The
 selectors are configured through package settings as `selector => true` maps, so a
@@ -315,8 +315,8 @@ NEOSidekick:
         '.cookie-dialog': true
         'svg': true
         'source': true
-        'iframe': true
-        'form': true
+        # iframe and form are deliberately absent: HtmlContentSimplifier turns them
+        # into links. Use data-markdown-skip to drop individual ones.
         'script': true
         'style': true
         '[aria-hidden="true"]': true
@@ -333,7 +333,7 @@ NEOSidekick:
     htmlContentSimplifier:
       removeSelectors:
         '.sr-only': true
-        'form': false
+        'footer': false
 ```
 
 Site packages can also explicitly mark non-content chrome with `data-markdown-skip`
