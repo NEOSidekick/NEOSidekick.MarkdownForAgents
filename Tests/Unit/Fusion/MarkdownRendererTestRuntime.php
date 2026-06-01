@@ -22,7 +22,7 @@ final class MarkdownRendererTestRuntime extends Runtime
         $this->canRenderMap = $canRenderMap;
         $this->renderMap = $renderMap;
         $this->exceptions = $exceptions;
-        $this->runtimeContentCache = new class($throwOnContentCacheRead) {
+        $this->runtimeContentCache = new class ($throwOnContentCacheRead) {
             private bool $enabled = true;
 
             private bool $throwOnRead;
