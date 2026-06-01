@@ -3,13 +3,15 @@
 
 # NEOSidekick.MarkdownForAgents
 
-Markdown rendering for AI agents in Neos CMS.
+**Markdown rendering for AI agents for the Neos CMS.**
 
 The package makes Neos pages available as clean Markdown while keeping the normal
 HTML experience unchanged for browsers. Agents can request Markdown either via a
 `.md` URL suffix or through HTTP content negotiation. The package converts most of
 your content correctly out of the box; add a dedicated renderer only where the
 result needs improvement.
+
+Also check out our just launchen [NEOSidekick cms content editing agent v3](https://neosidekick.com/)
 
 ## Why Markdown
 
