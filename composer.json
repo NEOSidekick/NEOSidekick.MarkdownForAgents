@@ -2,7 +2,7 @@
     "name": "neosidekick/markdown-for-agents",
     "description": "Markdown rendering for AI agents in Neos CMS",
     "type": "neos-plugin",
-    "license": "GPL-3.0-or-later",
+    "license": "GPL-3.0-only",
     "keywords": [
         "flow",
         "neos",
