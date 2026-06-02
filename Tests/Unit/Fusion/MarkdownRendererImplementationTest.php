@@ -29,7 +29,7 @@ final class MarkdownRendererImplementationTest extends UnitTestCase
             ],
             [],
             [
-                '/renderer/element<Example.Site:Document.BlogPost>/body' => new \RuntimeException('Fusion exploded'),
+                '/renderer/element<Example.Site:Document.BlogPost>' => new \RuntimeException('Fusion exploded'),
             ]
         );
         $renderer = new MarkdownRendererImplementation($runtime, '/renderer', 'NEOSidekick.MarkdownForAgents:MarkdownRenderer');
@@ -66,7 +66,7 @@ final class MarkdownRendererImplementationTest extends UnitTestCase
                 '/type<Example.Site:Document.BlogPost.Markdown>' => true,
             ],
             [
-                '/renderer/element<Example.Site:Document.BlogPost>/body' => '<main><h1>HTML Fallback</h1><p>Useful content.</p></main>',
+                '/renderer/element<Example.Site:Document.BlogPost>' => '<main><h1>HTML Fallback</h1><p>Useful content.</p></main>',
             ],
             [
                 '/renderer/element<Example.Site:Document.BlogPost.Markdown>' => new \RuntimeException('Markdown prototype exploded'),
@@ -105,7 +105,7 @@ final class MarkdownRendererImplementationTest extends UnitTestCase
                 '/type<Example.Site:Document.BlogPost.Markdown>' => false,
             ],
             [
-                '/renderer/element<Example.Site:Document.BlogPost>/body' => '<main><h1>An exception was thrown while Neos tried to render your page</h1></main>',
+                '/renderer/element<Example.Site:Document.BlogPost>' => '<main><h1>An exception was thrown while Neos tried to render your page</h1></main>',
             ]
         );
         $renderer = new MarkdownRendererImplementation($runtime, '/renderer', 'NEOSidekick.MarkdownForAgents:MarkdownRenderer');
@@ -139,9 +139,10 @@ final class MarkdownRendererImplementationTest extends UnitTestCase
                 '/type<Example.Site:Document.Page.Markdown>' => false,
             ],
             [
-                // The renderer asks for the document body, so the Http.Message head
-                // (only present on the whole document) never reaches the converter.
-                '/renderer/element<Example.Site:Document.Page>/body' => '<main><h1>Real Body</h1></main>',
+                // The renderer renders the whole document element (a Http.Message),
+                // so the document's @context is applied; the serialized head is then
+                // stripped before conversion.
+                '/renderer/element<Example.Site:Document.Page>' => "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<main><h1>Real Body</h1></main>",
             ]
         );
         $renderer = new MarkdownRendererImplementation($runtime, '/renderer', 'NEOSidekick.MarkdownForAgents:MarkdownRenderer');
@@ -150,6 +151,8 @@ final class MarkdownRendererImplementationTest extends UnitTestCase
         $markdown = $renderer->evaluate();
 
         self::assertStringContainsString('Real Body', $markdown);
+        self::assertStringNotContainsString('HTTP/1.1', $markdown);
+        self::assertStringNotContainsString('Content-Type', $markdown);
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NEOSidekick\MarkdownForAgents\Fusion;
 
+use GuzzleHttp\Psr7\Message;
 use NEOSidekick\MarkdownForAgents\Service\MarkdownConverter;
 use Neos\Flow\Annotations as Flow;
 use Neos\Fusion\FusionObjects\AbstractFusionObject;
@@ -64,11 +65,25 @@ final class MarkdownRendererImplementation extends AbstractFusionObject
             return '';
         }
 
-        $fallbackPath = sprintf('%s/element<%s>/body', $this->path, $type);
-        $html = $this->renderWithoutContentCache($fallbackPath);
+        // Render the whole element: Neos applies a document prototype's @context only
+        // when the element itself is evaluated, not when rendering a sub-path.
+        $fallbackPath = sprintf('%s/element<%s>', $this->path, $type);
+        $html = $this->stripHttpMessageHead($this->renderWithoutContentCache($fallbackPath));
         $this->assertNoExceptionOutput($html);
 
         return $this->markdownConverter->convert($html, $this->conversionOptions());
+    }
+
+    /**
+     * A rendered document is a serialized Neos.Fusion:Http.Message; return its body.
+     */
+    private function stripHttpMessageHead(string $output): string
+    {
+        if (strpos($output, 'HTTP/') !== 0) {
+            return $output;
+        }
+
+        return (string)Message::parseResponse($output)->getBody();
     }
 
     /**
