@@ -31,7 +31,5 @@ prototype(NEOSidekick.MarkdownForAgents:DocumentResponse) < prototype(Neos.Fusio
             absolute = true
             format = 'html'
         }
-        formNoticeLabel = ${Translation.translate('formNotice', 'A form can be found at', [], 'Markdown', 'NEOSidekick.MarkdownForAgents')}
-        iframeFallbackLabel = ${Translation.translate('iframeFallback', 'Embedded content', [], 'Markdown', 'NEOSidekick.MarkdownForAgents')}
     }
 }

@@ -6,6 +6,7 @@ namespace NEOSidekick\MarkdownForAgents\Service;
 
 use DOMNode;
 use Neos\Flow\Annotations as Flow;
+use Neos\Flow\I18n\Translator;
 use Symfony\Component\DomCrawler\Crawler;
 
 final class HtmlContentSimplifier
@@ -39,6 +40,12 @@ final class HtmlContentSimplifier
      * @var bool
      */
     protected bool $removeLinks = false;
+
+    /**
+     * @Flow\Inject(lazy = true)
+     * @var Translator
+     */
+    protected $translator;
 
     public function simplify(string $html, array $options = []): string
     {
@@ -126,9 +133,14 @@ final class HtmlContentSimplifier
      */
     private function replaceIframesWithLinks(Crawler $crawler, array $options): void
     {
-        $fallbackLabel = $this->stringOption($options, 'iframeFallbackLabel', 'Embedded content');
+        $iframes = $crawler->filter('iframe');
+        if ($iframes->count() === 0) {
+            return;
+        }
 
-        $crawler->filter('iframe')->each(function (Crawler $node) use ($fallbackLabel): void {
+        $fallbackLabel = $this->labelOption($options, 'iframeFallbackLabel', 'iframeFallback', 'Embedded content');
+
+        $iframes->each(function (Crawler $node) use ($fallbackLabel): void {
             $domNode = $node->getNode(0);
             if (!$domNode instanceof \DOMElement || $domNode->parentNode === null) {
                 return;
@@ -157,10 +169,15 @@ final class HtmlContentSimplifier
      */
     private function replaceFormsWithLinks(Crawler $crawler, array $options): void
     {
-        $pageUrl = $this->stringOption($options, 'canonicalUri', '');
-        $label = $this->stringOption($options, 'formNoticeLabel', 'A form can be found at');
+        $forms = $crawler->filter('form');
+        if ($forms->count() === 0) {
+            return;
+        }
 
-        $crawler->filter('form')->each(function (Crawler $node) use ($pageUrl, $label): void {
+        $pageUrl = $this->stringOption($options, 'canonicalUri', '');
+        $label = $this->labelOption($options, 'formNoticeLabel', 'formNotice', 'A form can be found at');
+
+        $forms->each(function (Crawler $node) use ($pageUrl, $label): void {
             $domNode = $node->getNode(0);
             if (!$domNode instanceof \DOMElement || $domNode->parentNode === null) {
                 return;
@@ -265,6 +282,32 @@ final class HtmlContentSimplifier
         $value = $options[$key] ?? null;
 
         return is_string($value) && trim($value) !== '' ? $value : $default;
+    }
+
+    /** Caller-provided label, else the package's own translation, else the English fallback. */
+    private function labelOption(array $options, string $optionKey, string $translationId, string $fallback): string
+    {
+        $explicit = $options[$optionKey] ?? null;
+        if (is_string($explicit) && trim($explicit) !== '') {
+            return $explicit;
+        }
+
+        return $this->translate($translationId, $fallback);
+    }
+
+    private function translate(string $id, string $fallback): string
+    {
+        if ($this->translator === null) {
+            return $fallback;
+        }
+
+        try {
+            $translated = $this->translator->translateById($id, [], null, null, 'Markdown', 'NEOSidekick.MarkdownForAgents');
+        } catch (\Throwable $exception) {
+            return $fallback;
+        }
+
+        return is_string($translated) && $translated !== '' ? $translated : $fallback;
     }
 
     private function removeHrefAttributes(Crawler $crawler): void

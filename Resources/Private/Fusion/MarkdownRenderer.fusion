@@ -5,6 +5,6 @@ prototype(NEOSidekick.MarkdownForAgents:MarkdownRenderer) {
     fallbackToHtml = true
     title = ''
     canonicalUri = ''
-    formNoticeLabel = 'A form can be found at'
-    iframeFallbackLabel = 'Embedded content'
+    formNoticeLabel = ''
+    iframeFallbackLabel = ''
 }

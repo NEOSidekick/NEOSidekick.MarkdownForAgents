@@ -6,6 +6,7 @@ namespace NEOSidekick\MarkdownForAgents\Tests\Unit\Service;
 
 use NEOSidekick\MarkdownForAgents\Service\HtmlContentSimplifier;
 use NEOSidekick\MarkdownForAgents\Service\MarkdownConverter;
+use Neos\Flow\I18n\Translator;
 use Neos\Flow\Tests\UnitTestCase;
 
 final class MarkdownConverterTest extends UnitTestCase
@@ -254,6 +255,47 @@ HTML;
         self::assertStringContainsString('[A form can be found at](https://example.test/contact)', $markdown);
         self::assertStringNotContainsString('Vorname', $markdown);
         self::assertStringNotContainsString('Business E-Mail', $markdown);
+    }
+
+    /**
+     * @test
+     */
+    public function translatesFormAndIframeLabelsFromThePackageCatalogWhenNoneAreProvided(): void
+    {
+        $translator = $this->createMock(Translator::class);
+        $translator->method('translateById')->willReturnMap([
+            ['formNotice', [], null, null, 'Markdown', 'NEOSidekick.MarkdownForAgents', 'Formular auf dieser Seite'],
+            ['iframeFallback', [], null, null, 'Markdown', 'NEOSidekick.MarkdownForAgents', 'Eingebetteter Inhalt'],
+        ]);
+        $this->inject($this->simplifier, 'translator', $translator);
+
+        $html = <<<'HTML'
+<html><body><main>
+    <iframe src="https://maps.example.test/embed"></iframe>
+    <form action="/submit"><input name="email" /></form>
+</main></body></html>
+HTML;
+
+        $markdown = $this->createConverter()->convert($html, ['canonicalUri' => 'https://example.test/contact']);
+
+        self::assertStringContainsString('[Formular auf dieser Seite](https://example.test/contact)', $markdown);
+        self::assertStringContainsString('[Eingebetteter Inhalt](https://maps.example.test/embed)', $markdown);
+    }
+
+    /**
+     * @test
+     */
+    public function fallsBackToTheEnglishLabelWhenTheCatalogHasNoTranslation(): void
+    {
+        $translator = $this->createMock(Translator::class);
+        $translator->method('translateById')->willReturn(null);
+        $this->inject($this->simplifier, 'translator', $translator);
+
+        $html = '<html><body><main><form action="/submit"><input name="email" /></form></main></body></html>';
+
+        $markdown = $this->createConverter()->convert($html, ['canonicalUri' => 'https://example.test/contact']);
+
+        self::assertStringContainsString('[A form can be found at](https://example.test/contact)', $markdown);
     }
 
     /**
