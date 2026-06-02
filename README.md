@@ -159,7 +159,7 @@ node controller with the `markdown` format.
 The site root (homepage) has an empty URI path segment, so its Markdown URL is
 `/index.md` rather than `/.md` — the latter is a dotfile-like path that common
 web servers reject. A dedicated `{node}index.md` route that only matches the site
-node serves it, and Markdown links to the homepage point there automatically:
+node serves that direct request:
 
 ```bash
 curl https://example.com/index.md
@@ -212,6 +212,11 @@ The **Markdown** response points back to the canonical HTML page:
 ```http
 Link: <https://example.com/company/about-us>; rel="canonical"
 ```
+
+Internal links inside the Markdown body resolve to the canonical HTML page, not the
+`.md` variant — the same target as the `rel="canonical"` header above. An agent that
+wants a linked page as Markdown requests it like any other page, via the Accept
+header or the `.md` suffix.
 
 ### Rendering Flow
 
@@ -281,8 +286,8 @@ Recommended structure for dedicated Markdown output:
 - Render only the primary content, not global page chrome.
 - Preserve useful metadata such as date, author, category, or source.
 - Use meaningful image alt text.
-- Keep links canonical and preferably point to the HTML page unless a Markdown URL
-  is explicitly desired.
+- Internal links are resolved to the canonical HTML page automatically; no manual
+  rewriting is needed.
 
 ### HTML Fallback
 
@@ -441,9 +446,9 @@ analysis across the supported PHP and Neos versions.
 
 ### Absolute asset URIs
 
-Node and inline link URIs are made absolute under the `markdown` format (via a
-`Neos.Neos:NodeUri` / `Neos.Neos:ConvertUris` override), but **asset URIs are
-not**. `LinkingService::resolveAssetUri()` has no `absolute` flag and simply
+Node and inline link URIs are made absolute and resolved as canonical HTML under
+the `markdown` format (via a `Neos.Neos:NodeUri` override and a
+`Neos.Neos:ConvertUris` subclass), but **asset URIs are not** made absolute. `LinkingService::resolveAssetUri()` has no `absolute` flag and simply
 returns whatever the resource publishing target yields (host-relative by
 default), and projects often re-route assets through their own controller, so
 there is no single place the package can hook. Deciding where and how to force
