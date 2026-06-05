@@ -25,6 +25,12 @@ final class HtmlContentSimplifier
     protected array $navigationSelectors = [];
 
     /**
+     * @Flow\InjectConfiguration(path="htmlContentSimplifier.tagsWithSpaceAfter", package="NEOSidekick.MarkdownForAgents")
+     * @var array<string, bool>
+     */
+    protected array $tagsWithSpaceAfter = [];
+
+    /**
      * @Flow\InjectConfiguration(path="htmlContentSimplifier.keepEmptyAltImages", package="NEOSidekick.MarkdownForAgents")
      * @var bool
      */
@@ -71,10 +77,17 @@ final class HtmlContentSimplifier
 
         $body = $crawler->filter('body');
         if ($body->count() > 0) {
-            return trim($body->html(''));
+            $html = $body->html('');
+        } else {
+            $html = $crawler->html('');
         }
 
-        return trim($crawler->html(''));
+        $tagsWithSpaceAfter = array_keys(array_filter(array_merge($this->tagsWithSpaceAfter, $options->tagsWithSpaceAfter)));
+        foreach ($tagsWithSpaceAfter as $tag) {
+            $html = str_replace("/$tag><", "/$tag> <", $html);
+        }
+
+        return trim($html);
     }
 
     /**

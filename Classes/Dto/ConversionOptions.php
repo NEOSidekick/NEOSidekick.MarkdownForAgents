@@ -19,10 +19,12 @@ final class ConversionOptions
         'removeLinks',
         'keepEmptyAltImages',
         'removeSelectors',
+        'tagsWithSpaceAfter',
     ];
 
     /**
      * @param array<string, bool> $removeSelectors selector => keep/remove, merged over the package defaults
+     * @param array<string, bool> $tagsWithSpaceAfter tag => enabled, merged over the package defaults
      */
     public function __construct(
         public readonly string $canonicalUri = '',
@@ -32,6 +34,7 @@ final class ConversionOptions
         public readonly ?bool $removeLinks = null,
         public readonly ?bool $keepEmptyAltImages = null,
         public readonly array $removeSelectors = [],
+        public readonly array $tagsWithSpaceAfter = [],
     ) {
     }
 
@@ -61,6 +64,7 @@ final class ConversionOptions
             removeLinks: self::readNullableBool($options, 'removeLinks'),
             keepEmptyAltImages: self::readNullableBool($options, 'keepEmptyAltImages'),
             removeSelectors: self::readSelectorMap($options, 'removeSelectors'),
+            tagsWithSpaceAfter: self::readSelectorMap($options, 'tagsWithSpaceAfter'),
         );
     }
 
