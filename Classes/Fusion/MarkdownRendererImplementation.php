@@ -91,11 +91,11 @@ final class MarkdownRendererImplementation extends AbstractFusionObject
      */
     private function conversionOptions(): array
     {
-        return [
+        return array_merge([
             'canonicalUri' => $this->safeFusionString('canonicalUri'),
             'formNoticeLabel' => $this->safeFusionString('formNoticeLabel'),
             'iframeFallbackLabel' => $this->safeFusionString('iframeFallbackLabel'),
-        ];
+        ], $this->fusionValue('htmlContentSimplifier') ?? []);
     }
 
     private function renderWithoutContentCache(string $fusionPath): string

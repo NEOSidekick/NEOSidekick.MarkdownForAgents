@@ -81,7 +81,8 @@ final class HtmlContentSimplifier
      */
     private function selectors(array $options): array
     {
-        $selectors = $this->enabledSelectors($this->removeSelectors);
+        $removeSelectors = array_merge($this->removeSelectors, $options['removeSelectors'] ?? []);
+        $selectors = $this->enabledSelectors($removeSelectors);
 
         if (($options['removeNavigation'] ?? $this->removeNavigation) === true) {
             $selectors = array_merge($selectors, $this->enabledSelectors($this->navigationSelectors));

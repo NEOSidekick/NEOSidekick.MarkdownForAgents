@@ -364,6 +364,53 @@ renderer = afx`
 `
 ```
 
+#### Per-request overrides with `htmlContentSimplifier`
+
+`NEOSidekick.MarkdownForAgents:MarkdownRenderer` exposes a dedicated
+`htmlContentSimplifier` option for runtime overrides. This is merged with the
+package defaults, so you can override only individual entries instead of
+replacing the whole configuration.
+
+Common use case: pick slightly different Markdown output for different agent
+profiles (for example, researcher vs. shopping assistant) while keeping one
+shared baseline in `Settings.yaml`.
+
+```fusion
+prototype(Vendor.Site:Document.Page.Markdown) < prototype(Neos.Fusion:Component) {
+    agentProfile = ${request.httpRequest.getHeaderLine('X-Agent-Profile')}
+
+    renderer = NEOSidekick.MarkdownForAgents:MarkdownRenderer {
+        type = 'Vendor.Site:Document.Page'
+        canonicalUri = Neos.Neos:NodeUri {
+            node = ${documentNode}
+            absolute = true
+            format = 'html'
+        }
+
+        htmlContentSimplifier = Neos.Fusion:DataStructure {
+            removeSelectors = Neos.Fusion:DataStructure {
+                # disable one default selector for one profile
+                'footer' = ${props.agentProfile == 'research' ? false : true}
+
+                # add an extra selector only for one profile
+                '.pricing-widget' = ${props.agentProfile == 'shopping'}
+            }
+
+            # override scalar options per profile as well
+            removeLinks = ${props.agentProfile == 'extract'}
+        }
+    }
+}
+```
+
+Notes:
+
+- `removeSelectors` entries are merged key-by-key; set a known selector to
+  `false` to disable that default, or add a new selector with `true`.
+- `navigationSelectors` currently come from package settings; use
+  `removeNavigation` as the runtime toggle.
+- This only affects Markdown rendering and does not change HTML output.
+
 ### Eel Helper
 
 The package exposes the helper as `NEOSidekickMarkdown`.
@@ -455,4 +502,3 @@ default), and projects often re-route assets through their own controller, so
 there is no single place the package can hook. Deciding where and how to force
 absolute asset URIs for agents — package default vs. per-project resource/target
 configuration — is still open.
-

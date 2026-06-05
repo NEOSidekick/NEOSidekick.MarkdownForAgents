@@ -7,4 +7,6 @@ prototype(NEOSidekick.MarkdownForAgents:MarkdownRenderer) {
     canonicalUri = ''
     formNoticeLabel = ''
     iframeFallbackLabel = ''
+
+    htmlContentSimplifier = Neos.Fusion:DataStructure
 }
