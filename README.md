@@ -89,7 +89,8 @@ result filters, language/region switchers, login, newsletter sign-up) to be hidd
    Markdown links agents can follow page by page (see the Flowpack.Listable recipe).
 4. Only add a dedicated `{Type}.Markdown` prototype when the content hierarchy
    genuinely needs it (articles, structured pages). See this README for the pattern
-   and for recipes such as the Flowpack.Listable pagination override.
+   and for recipes such as the Flowpack.Listable pagination override. For interactive 
+   elements render the context and a link to the live website for users to interact.
 
 Never change the HTML/visitor output — make Markdown-only adjustments.
 
