@@ -364,52 +364,38 @@ renderer = afx`
 `
 ```
 
-#### Per-request overrides with `htmlContentSimplifier`
+#### Per-request overrides
 
-`NEOSidekick.MarkdownForAgents:MarkdownRenderer` exposes a dedicated
-`htmlContentSimplifier` option for runtime overrides. This is merged with the
-package defaults, so you can override only individual entries instead of
-replacing the whole configuration.
-
-Common use case: pick slightly different Markdown output for different agent
-profiles (for example, researcher vs. shopping assistant) while keeping one
-shared baseline in `Settings.yaml`.
+The settings above are global defaults. For a single render you can override the
+simplifier through the `htmlContentSimplifier` property of
+`NEOSidekick.MarkdownForAgents:MarkdownRenderer`. It is merged over the package
+defaults, so you change individual entries instead of replacing the whole
+configuration — useful when one agent profile needs slightly different output:
 
 ```fusion
-prototype(Vendor.Site:Document.Page.Markdown) < prototype(Neos.Fusion:Component) {
-    agentProfile = ${request.httpRequest.getHeaderLine('X-Agent-Profile')}
+renderer = NEOSidekick.MarkdownForAgents:MarkdownRenderer {
+    type = 'Vendor.Site:Document.Page'
+    canonicalUri = Neos.Neos:NodeUri {
+        node = ${documentNode}
+        absolute = true
+        format = 'html'
+    }
 
-    renderer = NEOSidekick.MarkdownForAgents:MarkdownRenderer {
-        type = 'Vendor.Site:Document.Page'
-        canonicalUri = Neos.Neos:NodeUri {
-            node = ${documentNode}
-            absolute = true
-            format = 'html'
-        }
-
-        htmlContentSimplifier = Neos.Fusion:DataStructure {
-            removeSelectors = Neos.Fusion:DataStructure {
-                # disable one default selector for one profile
-                'footer' = ${props.agentProfile == 'research' ? false : true}
-
-                # add an extra selector only for one profile
-                '.pricing-widget' = ${props.agentProfile == 'shopping'}
-            }
-
-            # override scalar options per profile as well
-            removeLinks = ${props.agentProfile == 'extract'}
+    htmlContentSimplifier = Neos.Fusion:DataStructure {
+        removeLinks = true
+        removeSelectors = Neos.Fusion:DataStructure {
+            '.pricing-widget' = true   # drop an extra selector for this render
+            'footer' = false           # keep a default that is normally removed
         }
     }
 }
 ```
 
-Notes:
-
-- `removeSelectors` entries are merged key-by-key; set a known selector to
-  `false` to disable that default, or add a new selector with `true`.
-- `navigationSelectors` currently come from package settings; use
-  `removeNavigation` as the runtime toggle.
-- This only affects Markdown rendering and does not change HTML output.
+Accepted keys are `removeSelectors`, `removeNavigation`, `removeLinks` and
+`keepEmptyAltImages`; the labels `canonicalUri`, `formNoticeLabel` and
+`iframeFallbackLabel` stay on their own properties and always win. Unknown keys
+are rejected with an exception, so a typo fails loudly instead of being silently
+ignored.
 
 ### Eel Helper
 
@@ -442,6 +428,12 @@ single conversion:
   (configurable via `htmlContentSimplifier.keepEmptyAltImages`); set it to `false`
   to drop such images as decorative noise. Agents can still fetch and analyse a
   kept image, which is why keeping them is the default.
+- `removeSelectors`: a `selector => bool` map merged over the configured
+  `htmlContentSimplifier.removeSelectors`; add a selector with `true` or disable a
+  default with `false`.
+
+Unknown option keys are rejected with an exception, so a typo fails loudly
+instead of being silently ignored.
 
 ### Working with community packages
 
