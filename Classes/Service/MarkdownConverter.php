@@ -32,6 +32,7 @@ final class MarkdownConverter
             'strip_tags' => true,
             'hard_break' => false,
             'remove_nodes' => 'style script',
+            'header_style' => 'atx',
         ]);
         $converter->getEnvironment()->addConverter(new TableConverter());
 
