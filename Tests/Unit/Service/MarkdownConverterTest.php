@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NEOSidekick\MarkdownForAgents\Tests\Unit\Service;
 
+use NEOSidekick\MarkdownForAgents\Dto\ConversionOptions;
 use NEOSidekick\MarkdownForAgents\Service\HtmlContentSimplifier;
 use NEOSidekick\MarkdownForAgents\Service\MarkdownConverter;
 use Neos\Flow\I18n\Translator;
@@ -126,7 +127,7 @@ HTML;
     {
         $html = '<html><body><main><iframe src="https://maps.example.test/embed"></iframe></main></body></html>';
 
-        $markdown = $this->createConverter()->convert($html, ['iframeFallbackLabel' => 'Eingebetteter Inhalt']);
+        $markdown = $this->createConverter()->convert($html, ConversionOptions::fromArray(['iframeFallbackLabel' => 'Eingebetteter Inhalt']));
 
         self::assertStringContainsString('[Eingebetteter Inhalt](https://maps.example.test/embed)', $markdown);
     }
@@ -246,10 +247,10 @@ HTML;
 </html>
 HTML;
 
-        $markdown = $this->createConverter()->convert($html, [
+        $markdown = $this->createConverter()->convert($html, ConversionOptions::fromArray([
             'canonicalUri' => 'https://example.test/contact',
             'formNoticeLabel' => 'A form can be found at',
-        ]);
+        ]));
 
         self::assertStringContainsString('Ask us anything.', $markdown);
         self::assertStringContainsString('[A form can be found at](https://example.test/contact)', $markdown);
@@ -276,7 +277,7 @@ HTML;
 </main></body></html>
 HTML;
 
-        $markdown = $this->createConverter()->convert($html, ['canonicalUri' => 'https://example.test/contact']);
+        $markdown = $this->createConverter()->convert($html, ConversionOptions::fromArray(['canonicalUri' => 'https://example.test/contact']));
 
         self::assertStringContainsString('[Formular auf dieser Seite](https://example.test/contact)', $markdown);
         self::assertStringContainsString('[Eingebetteter Inhalt](https://maps.example.test/embed)', $markdown);
@@ -293,7 +294,7 @@ HTML;
 
         $html = '<html><body><main><form action="/submit"><input name="email" /></form></main></body></html>';
 
-        $markdown = $this->createConverter()->convert($html, ['canonicalUri' => 'https://example.test/contact']);
+        $markdown = $this->createConverter()->convert($html, ConversionOptions::fromArray(['canonicalUri' => 'https://example.test/contact']));
 
         self::assertStringContainsString('[A form can be found at](https://example.test/contact)', $markdown);
     }
@@ -316,7 +317,7 @@ HTML;
 </html>
 HTML;
 
-        $markdown = $this->createConverter()->convert($html, ['canonicalUri' => 'https://example.test/page']);
+        $markdown = $this->createConverter()->convert($html, ConversionOptions::fromArray(['canonicalUri' => 'https://example.test/page']));
 
         self::assertSame(2, substr_count($markdown, '(https://example.test/page)'));
         self::assertStringContainsString('Between the forms.', $markdown);
@@ -341,7 +342,7 @@ HTML;
 </html>
 HTML;
 
-        $markdown = $this->createConverter()->convert($html, ['canonicalUri' => 'https://example.test/search']);
+        $markdown = $this->createConverter()->convert($html, ConversionOptions::fromArray(['canonicalUri' => 'https://example.test/search']));
 
         self::assertStringContainsString('Search', $markdown);
         self::assertStringContainsString('Results follow.', $markdown);
@@ -559,7 +560,7 @@ HTML;
         $converter = new MarkdownConverter($simplifier);
 
         self::assertStringNotContainsString('Nav block', $converter->convert($html));
-        self::assertStringContainsString('Nav block', $converter->convert($html, ['removeNavigation' => false]));
+        self::assertStringContainsString('Nav block', $converter->convert($html, ConversionOptions::fromArray(['removeNavigation' => false])));
     }
 
     /**
@@ -569,7 +570,7 @@ HTML;
     {
         $html = '<html><body><main><p><a href="/target">link text</a> and <a name="anchor">named anchor</a>.</p></main></body></html>';
 
-        $markdown = $this->createConverter()->convert($html, ['removeLinks' => true]);
+        $markdown = $this->createConverter()->convert($html, ConversionOptions::fromArray(['removeLinks' => true]));
 
         self::assertStringContainsString('link text', $markdown);
         self::assertStringContainsString('named anchor', $markdown);
@@ -591,7 +592,7 @@ HTML;
         // The setting is the fallback: navigation is kept when no option is passed.
         self::assertStringContainsString('Nav block', $converter->convert($html));
         // A per-call option overrides the setting.
-        self::assertStringNotContainsString('Nav block', $converter->convert($html, ['removeNavigation' => true]));
+        self::assertStringNotContainsString('Nav block', $converter->convert($html, ConversionOptions::fromArray(['removeNavigation' => true])));
     }
 
     /**
@@ -608,7 +609,47 @@ HTML;
         // The setting is the fallback: hrefs are stripped when no option is passed.
         self::assertStringNotContainsString('/target', $converter->convert($html));
         // A per-call option overrides the setting.
-        self::assertStringContainsString('/target', $converter->convert($html, ['removeLinks' => false]));
+        self::assertStringContainsString('/target', $converter->convert($html, ConversionOptions::fromArray(['removeLinks' => false])));
+    }
+
+    /**
+     * @test
+     */
+    public function perCallRemoveSelectorsExtendTheConfiguredDefaults(): void
+    {
+        $html = <<<'HTML'
+<html><body><main>
+    <h1>Visible</h1>
+    <div class="default-drop">Configured default noise</div>
+    <div class="per-call-drop">Per-call noise</div>
+</main></body></html>
+HTML;
+
+        $simplifier = new HtmlContentSimplifier();
+        $this->inject($simplifier, 'removeSelectors', ['.default-drop' => true]);
+        $converter = new MarkdownConverter($simplifier);
+
+        $markdown = $converter->convert($html, ConversionOptions::fromArray(['removeSelectors' => ['.per-call-drop' => true]]));
+
+        self::assertStringContainsString('Visible', $markdown);
+        self::assertStringNotContainsString('Configured default noise', $markdown);
+        self::assertStringNotContainsString('Per-call noise', $markdown);
+    }
+
+    /**
+     * @test
+     */
+    public function perCallRemoveSelectorsCanDisableAConfiguredDefaultWithFalse(): void
+    {
+        $html = '<html><body><main><h1>Visible</h1><div class="default-drop">Configured default noise</div></main></body></html>';
+
+        $simplifier = new HtmlContentSimplifier();
+        $this->inject($simplifier, 'removeSelectors', ['.default-drop' => true]);
+        $converter = new MarkdownConverter($simplifier);
+
+        $markdown = $converter->convert($html, ConversionOptions::fromArray(['removeSelectors' => ['.default-drop' => false]]));
+
+        self::assertStringContainsString('Configured default noise', $markdown);
     }
 
     private function createConverter(bool $keepEmptyAltImages = true): MarkdownConverter

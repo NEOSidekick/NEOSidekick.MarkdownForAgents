@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NEOSidekick\MarkdownForAgents\Service;
 
 use DOMNode;
+use NEOSidekick\MarkdownForAgents\Dto\ConversionOptions;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\I18n\Translator;
 use Symfony\Component\DomCrawler\Crawler;
@@ -47,7 +48,7 @@ final class HtmlContentSimplifier
      */
     protected $translator;
 
-    public function simplify(string $html, array $options = []): string
+    public function simplify(string $html, ConversionOptions $options = new ConversionOptions()): string
     {
         $crawler = new Crawler();
         $crawler->addHtmlContent($html, 'UTF-8');
@@ -60,11 +61,11 @@ final class HtmlContentSimplifier
         $this->replaceFormsWithLinks($crawler, $options);
         $this->normalizeAnchors($crawler);
 
-        if (($options['keepEmptyAltImages'] ?? $this->keepEmptyAltImages) !== true) {
+        if (($options->keepEmptyAltImages ?? $this->keepEmptyAltImages) !== true) {
             $this->removeEmptyAltImages($crawler);
         }
 
-        if (($options['removeLinks'] ?? $this->removeLinks) === true) {
+        if (($options->removeLinks ?? $this->removeLinks) === true) {
             $this->removeHrefAttributes($crawler);
         }
 
@@ -79,12 +80,12 @@ final class HtmlContentSimplifier
     /**
      * @return array<int, string>
      */
-    private function selectors(array $options): array
+    private function selectors(ConversionOptions $options): array
     {
-        $removeSelectors = array_merge($this->removeSelectors, $options['removeSelectors'] ?? []);
+        $removeSelectors = array_merge($this->removeSelectors, $options->removeSelectors);
         $selectors = $this->enabledSelectors($removeSelectors);
 
-        if (($options['removeNavigation'] ?? $this->removeNavigation) === true) {
+        if (($options->removeNavigation ?? $this->removeNavigation) === true) {
             $selectors = array_merge($selectors, $this->enabledSelectors($this->navigationSelectors));
         }
 
@@ -129,17 +130,14 @@ final class HtmlContentSimplifier
         }
     }
 
-    /**
-     * @param array<string, mixed> $options
-     */
-    private function replaceIframesWithLinks(Crawler $crawler, array $options): void
+    private function replaceIframesWithLinks(Crawler $crawler, ConversionOptions $options): void
     {
         $iframes = $crawler->filter('iframe');
         if ($iframes->count() === 0) {
             return;
         }
 
-        $fallbackLabel = $this->labelOption($options, 'iframeFallbackLabel', 'iframeFallback', 'Embedded content');
+        $fallbackLabel = $this->labelOption($options->iframeFallbackLabel, 'iframeFallback', 'Embedded content');
 
         $iframes->each(function (Crawler $node) use ($fallbackLabel): void {
             $domNode = $node->getNode(0);
@@ -165,18 +163,15 @@ final class HtmlContentSimplifier
         });
     }
 
-    /**
-     * @param array<string, mixed> $options
-     */
-    private function replaceFormsWithLinks(Crawler $crawler, array $options): void
+    private function replaceFormsWithLinks(Crawler $crawler, ConversionOptions $options): void
     {
         $forms = $crawler->filter('form');
         if ($forms->count() === 0) {
             return;
         }
 
-        $pageUrl = $this->stringOption($options, 'canonicalUri', '');
-        $label = $this->labelOption($options, 'formNoticeLabel', 'formNotice', 'A form can be found at');
+        $pageUrl = $options->canonicalUri;
+        $label = $this->labelOption($options->formNoticeLabel, 'formNotice', 'A form can be found at');
 
         $forms->each(function (Crawler $node) use ($pageUrl, $label): void {
             $domNode = $node->getNode(0);
@@ -275,21 +270,10 @@ final class HtmlContentSimplifier
         return true;
     }
 
-    /**
-     * @param array<string, mixed> $options
-     */
-    private function stringOption(array $options, string $key, string $default): string
-    {
-        $value = $options[$key] ?? null;
-
-        return is_string($value) && trim($value) !== '' ? $value : $default;
-    }
-
     /** Caller-provided label, else the package's own translation, else the English fallback. */
-    private function labelOption(array $options, string $optionKey, string $translationId, string $fallback): string
+    private function labelOption(string $explicit, string $translationId, string $fallback): string
     {
-        $explicit = $options[$optionKey] ?? null;
-        if (is_string($explicit) && trim($explicit) !== '') {
+        if (trim($explicit) !== '') {
             return $explicit;
         }
 
