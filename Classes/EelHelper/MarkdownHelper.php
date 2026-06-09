@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NEOSidekick\MarkdownForAgents\EelHelper;
 
+use NEOSidekick\MarkdownForAgents\Dto\ConversionOptions;
 use NEOSidekick\MarkdownForAgents\Service\MarkdownConverter;
 use Neos\Eel\ProtectedContextAwareInterface;
 use Neos\Flow\Annotations as Flow;
@@ -21,9 +22,12 @@ final class MarkdownHelper implements ProtectedContextAwareInterface
         $this->markdownConverter = $markdownConverter ?? new MarkdownConverter();
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function htmlToMarkdown(string $html, array $options = []): string
     {
-        return $this->markdownConverter->convert($html, $options);
+        return $this->markdownConverter->convert($html, ConversionOptions::fromArray($options));
     }
 
     public function allowsCallOfMethod($methodName): bool

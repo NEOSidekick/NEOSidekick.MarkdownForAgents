@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NEOSidekick\MarkdownForAgents\Fusion;
 
 use GuzzleHttp\Psr7\Message;
+use NEOSidekick\MarkdownForAgents\Dto\ConversionOptions;
 use NEOSidekick\MarkdownForAgents\Service\MarkdownConverter;
 use Neos\Flow\Annotations as Flow;
 use Neos\Fusion\FusionObjects\AbstractFusionObject;
@@ -86,16 +87,14 @@ final class MarkdownRendererImplementation extends AbstractFusionObject
         return (string)Message::parseResponse($output)->getBody();
     }
 
-    /**
-     * @return array<string, string>
-     */
-    private function conversionOptions(): array
+    private function conversionOptions(): ConversionOptions
     {
-        return [
+        return ConversionOptions::fromArray([
+            ...$this->safeFusionArray('htmlContentSimplifier'),
             'canonicalUri' => $this->safeFusionString('canonicalUri'),
             'formNoticeLabel' => $this->safeFusionString('formNoticeLabel'),
             'iframeFallbackLabel' => $this->safeFusionString('iframeFallbackLabel'),
-        ];
+        ]);
     }
 
     private function renderWithoutContentCache(string $fusionPath): string
@@ -145,6 +144,20 @@ final class MarkdownRendererImplementation extends AbstractFusionObject
         }
 
         return is_string($value) ? trim($value) : '';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function safeFusionArray(string $path): array
+    {
+        try {
+            $value = $this->fusionValue($path);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        return is_array($value) ? $value : [];
     }
 
     private function logRenderingFailure(string $message, \Throwable $exception): void

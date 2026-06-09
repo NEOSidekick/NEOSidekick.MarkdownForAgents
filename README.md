@@ -364,6 +364,39 @@ renderer = afx`
 `
 ```
 
+#### Per-request overrides
+
+The settings above are global defaults. For a single render you can override the
+simplifier through the `htmlContentSimplifier` property of
+`NEOSidekick.MarkdownForAgents:MarkdownRenderer`. It is merged over the package
+defaults, so you change individual entries instead of replacing the whole
+configuration — useful when one agent profile needs slightly different output:
+
+```fusion
+renderer = NEOSidekick.MarkdownForAgents:MarkdownRenderer {
+    type = 'Vendor.Site:Document.Page'
+    canonicalUri = Neos.Neos:NodeUri {
+        node = ${documentNode}
+        absolute = true
+        format = 'html'
+    }
+
+    htmlContentSimplifier = Neos.Fusion:DataStructure {
+        removeLinks = true
+        removeSelectors = Neos.Fusion:DataStructure {
+            '.pricing-widget' = true   # drop an extra selector for this render
+            'footer' = false           # keep a default that is normally removed
+        }
+    }
+}
+```
+
+Accepted keys are `removeSelectors`, `removeNavigation`, `removeLinks` and
+`keepEmptyAltImages`; the labels `canonicalUri`, `formNoticeLabel` and
+`iframeFallbackLabel` stay on their own properties and always win. Unknown keys
+are rejected with an exception, so a typo fails loudly instead of being silently
+ignored.
+
 ### Eel Helper
 
 The package exposes the helper as `NEOSidekickMarkdown`.
@@ -395,6 +428,12 @@ single conversion:
   (configurable via `htmlContentSimplifier.keepEmptyAltImages`); set it to `false`
   to drop such images as decorative noise. Agents can still fetch and analyse a
   kept image, which is why keeping them is the default.
+- `removeSelectors`: a `selector => bool` map merged over the configured
+  `htmlContentSimplifier.removeSelectors`; add a selector with `true` or disable a
+  default with `false`.
+
+Unknown option keys are rejected with an exception, so a typo fails loudly
+instead of being silently ignored.
 
 ### Working with community packages
 
@@ -455,4 +494,3 @@ default), and projects often re-route assets through their own controller, so
 there is no single place the package can hook. Deciding where and how to force
 absolute asset URIs for agents — package default vs. per-project resource/target
 configuration — is still open.
-

@@ -12,7 +12,7 @@
         "agents"
     ],
     "require": {
-        "php": "^8.0",
+        "php": "^8.2",
         "neos/neos": "~8.4 || dev-master",
         "neos/seo": "^3.2",
         "league/html-to-markdown": "^5.1",

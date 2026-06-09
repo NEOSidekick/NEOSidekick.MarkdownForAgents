@@ -6,6 +6,7 @@ namespace NEOSidekick\MarkdownForAgents\Service;
 
 use League\HTMLToMarkdown\Converter\TableConverter;
 use League\HTMLToMarkdown\HtmlConverter;
+use NEOSidekick\MarkdownForAgents\Dto\ConversionOptions;
 
 final class MarkdownConverter
 {
@@ -21,7 +22,7 @@ final class MarkdownConverter
         $this->markdownSimplifier = $markdownSimplifier ?? new MarkdownSimplifier();
     }
 
-    public function convert(string $html, array $options = []): string
+    public function convert(string $html, ConversionOptions $options = new ConversionOptions()): string
     {
         $simplifiedHtml = $this->htmlContentSimplifier->simplify($html, $options);
         if ($simplifiedHtml === '') {
