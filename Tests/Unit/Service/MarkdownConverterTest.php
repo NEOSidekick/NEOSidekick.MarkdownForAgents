@@ -652,6 +652,38 @@ HTML;
         self::assertStringContainsString('Configured default noise', $markdown);
     }
 
+    /**
+     * @test
+     */
+    public function insertsConfiguredSeparatorsBetweenDefinitionListTermsAndDefinitions(): void
+    {
+        $html = '<html><body><main><dl><dt>Foo</dt><dd>Bar</dd><dt>Baz</dt><dd>Qux</dd></dl></main></body></html>';
+
+        $simplifier = new HtmlContentSimplifier();
+        $this->inject($simplifier, 'tagSeparatorAfter', ['dt' => ': ', 'dd' => ' ']);
+        $converter = new MarkdownConverter($simplifier);
+
+        $markdown = $converter->convert($html);
+
+        self::assertStringContainsString('Foo: Bar', $markdown);
+        self::assertStringContainsString('Baz: Qux', $markdown);
+        self::assertStringNotContainsString('FooBar', $markdown);
+        self::assertStringNotContainsString('BarBaz', $markdown);
+    }
+
+    /**
+     * @test
+     */
+    public function leavesDefinitionListsGluedWhenNoTagSpacingIsConfigured(): void
+    {
+        $html = '<html><body><main><dl><dt>Foo</dt><dd>Bar</dd></dl></main></body></html>';
+
+        $simplifier = new HtmlContentSimplifier();
+        $converter = new MarkdownConverter($simplifier);
+
+        self::assertStringContainsString('FooBar', $converter->convert($html));
+    }
+
     private function createConverter(bool $keepEmptyAltImages = true): MarkdownConverter
     {
         $this->inject($this->simplifier, 'keepEmptyAltImages', $keepEmptyAltImages);

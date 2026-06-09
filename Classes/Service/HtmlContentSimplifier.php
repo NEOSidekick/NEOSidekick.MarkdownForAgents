@@ -25,6 +25,12 @@ final class HtmlContentSimplifier
     protected array $navigationSelectors = [];
 
     /**
+     * @Flow\InjectConfiguration(path="htmlContentSimplifier.tagSeparatorAfter", package="NEOSidekick.MarkdownForAgents")
+     * @var array<string, string>
+     */
+    protected array $tagSeparatorAfter = [];
+
+    /**
      * @Flow\InjectConfiguration(path="htmlContentSimplifier.keepEmptyAltImages", package="NEOSidekick.MarkdownForAgents")
      * @var bool
      */
@@ -71,10 +77,18 @@ final class HtmlContentSimplifier
 
         $body = $crawler->filter('body');
         if ($body->count() > 0) {
-            return trim($body->html(''));
+            $html = $body->html('');
+        } else {
+            $html = $crawler->html('');
         }
 
-        return trim($crawler->html(''));
+        foreach (array_merge($this->tagSeparatorAfter, $options->tagSeparatorAfter) as $tag => $separator) {
+            if ($separator !== '') {
+                $html = str_replace("/$tag><", "/$tag>$separator<", $html);
+            }
+        }
+
+        return trim($html);
     }
 
     /**

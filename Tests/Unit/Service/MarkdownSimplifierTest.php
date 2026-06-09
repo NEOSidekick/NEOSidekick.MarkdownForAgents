@@ -92,4 +92,52 @@ final class MarkdownSimplifierTest extends UnitTestCase
     {
         self::assertSame('a b', $this->simplifier->simplify("a\xc2\xa0b"));
     }
+
+    /**
+     * @test
+     */
+    public function deGluesAHeadingFusedToPrecedingText(): void
+    {
+        self::assertSame(
+            "Some intro text\n\n## Heading",
+            $this->simplifier->simplify('Some intro text## Heading')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function deGluesHeadingsAfterInlineFormattingAndImages(): void
+    {
+        self::assertSame(
+            "**better**\n\n## Werte",
+            $this->simplifier->simplify('**better**## Werte')
+        );
+        self::assertSame(
+            "![alt](/x.png)\n\n#### Name",
+            $this->simplifier->simplify('![alt](/x.png)#### Name')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function keepsHeadingsThatAlreadyStartTheirLine(): void
+    {
+        self::assertSame(
+            "# Title\n\nBody text",
+            $this->simplifier->simplify("# Title\n\nBody text")
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function doesNotSplitInlineHashTokensLikeCSharp(): void
+    {
+        self::assertSame(
+            'We build APIs in C# and F# daily',
+            $this->simplifier->simplify('We build APIs in C# and F# daily')
+        );
+    }
 }

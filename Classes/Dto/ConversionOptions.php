@@ -19,10 +19,12 @@ final class ConversionOptions
         'removeLinks',
         'keepEmptyAltImages',
         'removeSelectors',
+        'tagSeparatorAfter',
     ];
 
     /**
      * @param array<string, bool> $removeSelectors selector => keep/remove, merged over the package defaults
+     * @param array<string, string> $tagSeparatorAfter tag => separator inserted after the closing tag, merged over the package defaults
      */
     public function __construct(
         public readonly string $canonicalUri = '',
@@ -32,6 +34,7 @@ final class ConversionOptions
         public readonly ?bool $removeLinks = null,
         public readonly ?bool $keepEmptyAltImages = null,
         public readonly array $removeSelectors = [],
+        public readonly array $tagSeparatorAfter = [],
     ) {
     }
 
@@ -61,6 +64,7 @@ final class ConversionOptions
             removeLinks: self::readNullableBool($options, 'removeLinks'),
             keepEmptyAltImages: self::readNullableBool($options, 'keepEmptyAltImages'),
             removeSelectors: self::readSelectorMap($options, 'removeSelectors'),
+            tagSeparatorAfter: self::readStringMap($options, 'tagSeparatorAfter'),
         );
     }
 
@@ -131,6 +135,38 @@ final class ConversionOptions
                 );
             }
             $map[$selector] = (bool)$enabled;
+        }
+
+        return $map;
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     * @return array<string, string>
+     */
+    private static function readStringMap(array $options, string $key): array
+    {
+        if (!array_key_exists($key, $options)) {
+            return [];
+        }
+
+        $value = $options[$key];
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException(
+                sprintf('Markdown conversion option "%s" must be an array of "tag => separator", %s given.', $key, get_debug_type($value)),
+                1769270006
+            );
+        }
+
+        $map = [];
+        foreach ($value as $tag => $separator) {
+            if (!is_string($tag) || !is_string($separator)) {
+                throw new \InvalidArgumentException(
+                    sprintf('Markdown conversion option "%s" must map tag strings to separator strings.', $key),
+                    1769270007
+                );
+            }
+            $map[$tag] = $separator;
         }
 
         return $map;

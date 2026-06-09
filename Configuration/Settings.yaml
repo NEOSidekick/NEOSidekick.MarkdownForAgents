@@ -44,3 +44,6 @@ NEOSidekick:
         '[data-neosidekick-skip]': true
         # New attribute for skipping content in Markdown
         '[data-markdown-skip]': true
+      tagSeparatorAfter:
+        'dt': ': '
+        'dd': ' '
