@@ -344,6 +344,23 @@ NEOSidekick:
         'footer': false
 ```
 
+The converter has no rule for definition lists, so it drops the
+`<dl>`/`<dt>`/`<dd>` tags but keeps their text — `<dl><dt>Foo</dt><dd>Bar</dd></dl>`
+becomes `FooBar`. `tagSeparatorAfter` maps a tag to a string inserted after its
+closing tag to keep the parts apart, and the defaults render definition lists as
+`Term: Definition`:
+
+```yaml
+NEOSidekick:
+  MarkdownForAgents:
+    htmlContentSimplifier:
+      tagSeparatorAfter:
+        'dt': ': '
+        'dd': ' '
+```
+
+Set a tag to an empty string to insert no separator after it.
+
 Site packages can also explicitly mark non-content chrome with `data-markdown-skip`
 when it should be omitted from Markdown, so no extra Fusion component is needed.
 
@@ -391,11 +408,11 @@ renderer = NEOSidekick.MarkdownForAgents:MarkdownRenderer {
 }
 ```
 
-Accepted keys are `removeSelectors`, `removeNavigation`, `removeLinks` and
-`keepEmptyAltImages`; the labels `canonicalUri`, `formNoticeLabel` and
-`iframeFallbackLabel` stay on their own properties and always win. Unknown keys
-are rejected with an exception, so a typo fails loudly instead of being silently
-ignored.
+Accepted keys are `removeSelectors`, `tagSeparatorAfter`, `removeNavigation`,
+`removeLinks` and `keepEmptyAltImages`; the labels `canonicalUri`,
+`formNoticeLabel` and `iframeFallbackLabel` stay on their own properties and always
+win. Unknown keys are rejected with an exception, so a typo fails loudly instead of
+being silently ignored.
 
 ### Eel Helper
 
@@ -431,6 +448,9 @@ single conversion:
 - `removeSelectors`: a `selector => bool` map merged over the configured
   `htmlContentSimplifier.removeSelectors`; add a selector with `true` or disable a
   default with `false`.
+- `tagSeparatorAfter`: a `tag => separator` map merged over the configured
+  `htmlContentSimplifier.tagSeparatorAfter`; inserts the given string after each
+  closing tag (e.g. `dt: ': '`), or an empty string to insert nothing.
 
 Unknown option keys are rejected with an exception, so a typo fails loudly
 instead of being silently ignored.
