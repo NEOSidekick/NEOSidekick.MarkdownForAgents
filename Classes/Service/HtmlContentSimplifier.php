@@ -25,10 +25,10 @@ final class HtmlContentSimplifier
     protected array $navigationSelectors = [];
 
     /**
-     * @Flow\InjectConfiguration(path="htmlContentSimplifier.tagsWithSpaceAfter", package="NEOSidekick.MarkdownForAgents")
-     * @var array<string, bool>
+     * @Flow\InjectConfiguration(path="htmlContentSimplifier.tagSeparatorAfter", package="NEOSidekick.MarkdownForAgents")
+     * @var array<string, string>
      */
-    protected array $tagsWithSpaceAfter = [];
+    protected array $tagSeparatorAfter = [];
 
     /**
      * @Flow\InjectConfiguration(path="htmlContentSimplifier.keepEmptyAltImages", package="NEOSidekick.MarkdownForAgents")
@@ -82,9 +82,10 @@ final class HtmlContentSimplifier
             $html = $crawler->html('');
         }
 
-        $tagsWithSpaceAfter = array_keys(array_filter(array_merge($this->tagsWithSpaceAfter, $options->tagsWithSpaceAfter)));
-        foreach ($tagsWithSpaceAfter as $tag) {
-            $html = str_replace("/$tag><", "/$tag> <", $html);
+        foreach (array_merge($this->tagSeparatorAfter, $options->tagSeparatorAfter) as $tag => $separator) {
+            if ($separator !== '') {
+                $html = str_replace("/$tag><", "/$tag>$separator<", $html);
+            }
         }
 
         return trim($html);

@@ -655,18 +655,18 @@ HTML;
     /**
      * @test
      */
-    public function insertsConfiguredSpacingBetweenDefinitionListTermsAndDefinitions(): void
+    public function insertsConfiguredSeparatorsBetweenDefinitionListTermsAndDefinitions(): void
     {
         $html = '<html><body><main><dl><dt>Foo</dt><dd>Bar</dd><dt>Baz</dt><dd>Qux</dd></dl></main></body></html>';
 
         $simplifier = new HtmlContentSimplifier();
-        $this->inject($simplifier, 'tagsWithSpaceAfter', ['dt' => true, 'dd' => true]);
+        $this->inject($simplifier, 'tagSeparatorAfter', ['dt' => ': ', 'dd' => ' ']);
         $converter = new MarkdownConverter($simplifier);
 
         $markdown = $converter->convert($html);
 
-        self::assertStringContainsString('Foo Bar', $markdown);
-        self::assertStringContainsString('Baz Qux', $markdown);
+        self::assertStringContainsString('Foo: Bar', $markdown);
+        self::assertStringContainsString('Baz: Qux', $markdown);
         self::assertStringNotContainsString('FooBar', $markdown);
         self::assertStringNotContainsString('BarBaz', $markdown);
     }

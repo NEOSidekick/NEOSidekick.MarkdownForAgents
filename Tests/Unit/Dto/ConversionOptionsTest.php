@@ -23,7 +23,7 @@ final class ConversionOptionsTest extends UnitTestCase
         self::assertNull($options->removeLinks);
         self::assertNull($options->keepEmptyAltImages);
         self::assertSame([], $options->removeSelectors);
-        self::assertSame([], $options->tagsWithSpaceAfter);
+        self::assertSame([], $options->tagSeparatorAfter);
     }
 
     /**
@@ -39,7 +39,7 @@ final class ConversionOptionsTest extends UnitTestCase
             'removeLinks' => true,
             'keepEmptyAltImages' => false,
             'removeSelectors' => ['.foo' => true, 'footer' => false],
-            'tagsWithSpaceAfter' => ['dt' => true, 'dd' => false],
+            'tagSeparatorAfter' => ['dt' => ': ', 'dd' => ' '],
         ]);
 
         self::assertSame('https://example.test/page', $options->canonicalUri);
@@ -49,7 +49,7 @@ final class ConversionOptionsTest extends UnitTestCase
         self::assertTrue($options->removeLinks);
         self::assertFalse($options->keepEmptyAltImages);
         self::assertSame(['.foo' => true, 'footer' => false], $options->removeSelectors);
-        self::assertSame(['dt' => true, 'dd' => false], $options->tagsWithSpaceAfter);
+        self::assertSame(['dt' => ': ', 'dd' => ' '], $options->tagSeparatorAfter);
     }
 
     /**
