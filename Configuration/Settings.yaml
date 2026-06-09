@@ -46,3 +46,4 @@ NEOSidekick:
         '[data-markdown-skip]': true
       tagsWithSpaceAfter:
         'dt': true
+        'dd': true
