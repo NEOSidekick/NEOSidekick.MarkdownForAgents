@@ -12,6 +12,7 @@ final class MarkdownSimplifier
         $markdown = str_replace("\xc2\xa0", ' ', $markdown);
         $markdown = preg_replace('/[ \t]+\n/', "\n", $markdown) ?? $markdown;
         $markdown = preg_replace('/\n{3,}/', "\n\n", $markdown) ?? $markdown;
+        $markdown = preg_replace('/^[-\>][ \t]*\n/m', '', $markdown) ?? $markdown;
 
         return trim($markdown);
     }
