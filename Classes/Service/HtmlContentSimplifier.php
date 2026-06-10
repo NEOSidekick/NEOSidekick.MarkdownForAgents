@@ -56,6 +56,9 @@ final class HtmlContentSimplifier
 
     public function simplify(string $html, ConversionOptions $options = new ConversionOptions()): string
     {
+        // Add a space after <br> tags that aren't already followed by whitespace, so they don't get concatenated with the next text chunk.
+        $html = preg_replace('~<br\s*/?>(?!\s)~i', '<br> ', $html) ?? $html;
+
         $crawler = new Crawler();
         $crawler->addHtmlContent($html, 'UTF-8');
 
