@@ -17,8 +17,8 @@ final class MarkdownSimplifier
         // Remove trailing spaces and tabs at the end of lines
         $markdown = preg_replace('/[ \t]+\n/', "\n", $markdown) ?? $markdown;
 
-        // Insert a blank line before h2-h6 headings that are directly appended to text
-        $markdown = preg_replace('/([^\s#\r\n])(#{2,6}\s)/', "$1\n\n$2", $markdown) ?? $markdown;
+        // Insert a blank line before a heading that is directly appended to text
+        $markdown = preg_replace('/([\w]{2}|[^\w\s#])(#{1,6}\s)/', "$1\n\n$2", $markdown) ?? $markdown;
 
         // Ensure that every heading is preceded by a blank line unless one already exists
         $markdown = preg_replace('/([^\n])\n(#{1,6}\s.*)$/m', "$1\n\n$2", $markdown) ?? $markdown;
