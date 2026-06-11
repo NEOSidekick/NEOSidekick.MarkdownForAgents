@@ -140,4 +140,26 @@ final class MarkdownSimplifierTest extends UnitTestCase
             $this->simplifier->simplify('We build APIs in C# and F# daily')
         );
     }
+
+    /**
+     * @test
+     */
+    public function doesNotSplitHashTokensInTheMiddleOfWords(): void
+    {
+        self::assertSame(
+            'This is a test of the #hashtag functionality.',
+            $this->simplifier->simplify('This is a test of the #hashtag functionality.')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function headlineHandling(): void
+    {
+        self::assertSame(
+            "# h1\n\nText\n\n## h2\n\n### h3\n\n#### h4\n\n##### h5",
+            $this->simplifier->simplify("# h1\nText\n## h2\n\n### h3\n\n#### h4\n\n##### h5")
+        );
+    }
 }
