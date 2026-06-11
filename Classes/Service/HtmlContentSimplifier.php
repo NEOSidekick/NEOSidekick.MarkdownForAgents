@@ -56,11 +56,10 @@ final class HtmlContentSimplifier
 
     public function simplify(string $html, ConversionOptions $options = new ConversionOptions()): string
     {
-        // Add a space after <br> tags that aren't already followed by whitespace, so they don't get concatenated with the next text chunk.
-        $html = preg_replace('~<br\s*/?>(?!\s)~i', '<br> ', $html) ?? $html;
-
         $crawler = new Crawler();
         $crawler->addHtmlContent($html, 'UTF-8');
+
+        $this->spaceOutLineBreaksInSingleLineContexts($crawler);
 
         // Must run before the replacements below, so forms/iframes inside removed
         // or data-markdown-skip regions are never turned into links.
@@ -340,5 +339,17 @@ final class HtmlContentSimplifier
         }
 
         $node->parentNode->removeChild($node);
+    }
+
+    private function spaceOutLineBreaksInSingleLineContexts(Crawler $crawler): void
+    {
+        $crawler->filter('h1, h2, h3, h4, h5, h6, a, td, th, caption, dt, summary')->each(function (Crawler $context): void {
+            $context->filter('br')->each(function (Crawler $node): void {
+                $br = $node->getNode(0);
+                if ($br instanceof \DOMElement && $br->parentNode !== null && $br->ownerDocument !== null) {
+                    $br->parentNode->replaceChild($br->ownerDocument->createTextNode(' '), $br);
+                }
+            });
+        });
     }
 }

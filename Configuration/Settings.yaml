@@ -24,7 +24,6 @@ NEOSidekick:
         '.navbox': true
       removeSelectors:
         # Page chrome
-        'br': true
         'header': true
         'footer': true
         'head': true

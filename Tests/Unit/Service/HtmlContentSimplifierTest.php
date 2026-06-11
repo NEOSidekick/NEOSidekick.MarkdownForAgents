@@ -21,11 +21,33 @@ final class HtmlContentSimplifierTest extends UnitTestCase
     /**
      * @test
      */
-    public function addsSpaceAfterLineBreakIfNeeded(): void
+    public function spacesOutLineBreaksInsideHeadings(): void
     {
         self::assertSame(
-            "<p>Foo<br> Bar</p><p>Foo<br> Bar</p><p>Foo<br> Bar</p><p>Foo<br> Bar</p><p>Foo<br> Bar</p><p>Foo<br> Bar</p>",
-            $this->simplifier->simplify("<p>Foo<br>Bar</p><p>Foo<br/>Bar</p><p>Foo<br />Bar</p><p>Foo<br> Bar</p><p>Foo<br/> Bar</p><p>Foo<br /> Bar</p>")
+            "<h1>Foo Bar</h1><h2>Foo Bar</h2><h3>Foo Bar</h3>",
+            $this->simplifier->simplify("<h1>Foo<br>Bar</h1><h2>Foo<br/>Bar</h2><h3>Foo<br />Bar</h3>")
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function spacesOutLineBreaksInsideLinks(): void
+    {
+        self::assertSame(
+            '<p><a href="/x">Foo Bar</a></p>',
+            $this->simplifier->simplify('<p><a href="/x">Foo<br>Bar</a></p>')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function keepsLineBreaksInFlowingContent(): void
+    {
+        self::assertSame(
+            "<p>Foo<br>Bar</p>",
+            $this->simplifier->simplify("<p>Foo<br>Bar</p>")
         );
     }
 }
