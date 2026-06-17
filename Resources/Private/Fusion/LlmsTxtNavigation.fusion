@@ -1,0 +1,14 @@
+prototype(NEOSidekick.MarkdownForAgents:LlmsTxtNavigation) < prototype(Neos.Fusion:Component) {
+    listHtml = NEOSidekick.MarkdownForAgents:HtmlConvertUris {
+        value = NEOSidekick.MarkdownForAgents:LlmsTxtNavigation.List {
+            items = Neos.Neos:MenuItems {
+                menuStartingPoint = ${site}
+                maximumLevels = ${q(site).property('llmsTxtNavigationLevels')}
+                filter = 'Neos.Neos:Document'
+            }
+        }
+        node = ${site}
+        forceConversion = true
+    }
+    renderer = ${String.trim(NEOSidekickMarkdown.htmlToMarkdown(props.listHtml))}
+}

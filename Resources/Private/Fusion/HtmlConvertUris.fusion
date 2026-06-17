@@ -1,0 +1,4 @@
+prototype(NEOSidekick.MarkdownForAgents:HtmlConvertUris) < prototype(Neos.Neos:ConvertUris) {
+    @class = 'NEOSidekick\\MarkdownForAgents\\Fusion\\HtmlFormatConvertUrisImplementation'
+    absolute = true
+}

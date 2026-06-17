@@ -6,4 +6,9 @@ root {
         condition = ${request.format == 'markdown'}
         type = 'NEOSidekick.MarkdownForAgents:DocumentResponse'
     }
+    llmsTxt {
+        @position = 'before format'
+        condition = ${request.format == 'txt.llms'}
+        renderer = NEOSidekick.MarkdownForAgents:LlmsTxt
+    }
 }

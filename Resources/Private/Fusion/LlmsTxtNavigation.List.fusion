@@ -1,0 +1,14 @@
+prototype(NEOSidekick.MarkdownForAgents:LlmsTxtNavigation.List) < prototype(Neos.Fusion:Component) {
+    items = ${[]}
+    renderer = afx`
+        <ul>
+            <Neos.Fusion:Loop items={props.items} itemName="item">
+                <li>
+                    <a @if.isLink={!item.subItems} href={'node://' + q(item.node).property('_identifier')}>{item.label}</a>
+                    <Neos.Fusion:Value @if.isLabel={item.subItems} value={item.label} />
+                    <NEOSidekick.MarkdownForAgents:LlmsTxtNavigation.List @if.hasChildren={item.subItems} items={item.subItems} />
+                </li>
+            </Neos.Fusion:Loop>
+        </ul>
+    `
+}

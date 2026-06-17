@@ -10,6 +10,10 @@
                 <source>Embedded content</source>
                 <target>Contenu intégré</target>
             </trans-unit>
+            <trans-unit id="llmsTxtNavigationHeading" xml:space="preserve">
+                <source>Pages</source>
+                <target>Pages</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>

@@ -1,0 +1,61 @@
+prototype(NEOSidekick.MarkdownForAgents:LlmsTxt) < prototype(Neos.Fusion:Component) {
+    siteTitle = ${q(site).property('titleOverride') || q(site).property('title')}
+    metaDescription = ${q(site).property('metaDescription')}
+    navigationLevels = ${q(site).property('llmsTxtNavigationLevels')}
+    navigationHeading = ${Translation.translate('llmsTxtNavigationHeading', 'Pages', [], 'Markdown', 'NEOSidekick.MarkdownForAgents')}
+
+    bodyHtml = NEOSidekick.MarkdownForAgents:HtmlConvertUris {
+        value = ${q(site).property('llmsTxt') || ''}
+        node = ${site}
+        forceConversion = true
+    }
+    bodyMarkdown = ${String.trim(NEOSidekickMarkdown.htmlToMarkdown(this.bodyHtml))}
+
+    renderer = Neos.Fusion:Http.Message {
+        httpResponseHead {
+            headers.Content-Type = 'text/markdown; charset=utf-8'
+        }
+
+        body = Neos.Fusion:Join {
+            @glue = ${String.chr(10) + String.chr(10)}
+
+            head = Neos.Fusion:Case {
+                authored {
+                    condition = ${props.bodyMarkdown != ''}
+                    renderer = ${props.bodyMarkdown}
+                }
+                fallback {
+                    condition = true
+                    renderer = Neos.Fusion:Join {
+                        @glue = ${String.chr(10) + String.chr(10)}
+                        title = ${'# ' + (props.siteTitle || '')}
+                        description = Neos.Fusion:Value {
+                            @if.has = ${String.trim(props.metaDescription || '') != ''}
+                            value = ${props.metaDescription}
+                        }
+                    }
+                }
+            }
+
+            navigation = Neos.Fusion:Join {
+                @if.hasLevels = ${props.navigationLevels}
+                @glue = ${String.chr(10) + String.chr(10)}
+                heading = ${'## ' + props.navigationHeading}
+                list = NEOSidekick.MarkdownForAgents:LlmsTxtNavigation
+            }
+
+            @process.finalNewline = ${String.trim(value) + String.chr(10)}
+        }
+    }
+
+    @cache {
+        mode = 'cached'
+        entryIdentifier {
+            node = ${node}
+        }
+        entryTags {
+            1 = ${Neos.Caching.nodeTag(site)}
+            2 = ${Neos.Caching.descendantOfTag(site)}
+        }
+    }
+}

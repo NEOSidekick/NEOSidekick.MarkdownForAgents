@@ -8,8 +8,8 @@ use Neos\Neos\Fusion\ConvertUrisImplementation;
 
 /**
  * Neos.Neos:ConvertUris resolves inline node links in the request format and has
- * no "format" option, so a Markdown render emits ".md" URLs. This keeps them
- * canonical HTML.
+ * no "format" option, so an agent-facing render (".md" Markdown or the "llms.txt"
+ * format) emits links in that non-HTML format. This keeps them canonical HTML.
  */
 final class HtmlFormatConvertUrisImplementation extends ConvertUrisImplementation
 {
@@ -18,8 +18,7 @@ final class HtmlFormatConvertUrisImplementation extends ConvertUrisImplementatio
         $request = $this->runtime->getControllerContext()->getRequest()->getMainRequest();
         $previousFormat = $request->getFormat();
 
-        // Only a Markdown render emits the ".md" links this corrects.
-        if ($previousFormat !== 'markdown') {
+        if ($previousFormat === 'html') {
             return parent::evaluate();
         }
 

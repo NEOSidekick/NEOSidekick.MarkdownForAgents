@@ -30,6 +30,46 @@
                 <source>Allow crawlers to input site content into AI models for retrieval augmented generation, grounding, or real-time generative AI search answers.</source>
                 <target xml:lang="es" state="translated">Permite que los rastreadores introduzcan el contenido del sitio en modelos de IA para generación aumentada por recuperación, grounding o respuestas en tiempo real de búsquedas generativas con IA.</target>
             </trans-unit>
+            <trans-unit id="properties.llmsTxt" xml:space="preserve">
+                <source>LLMs.txt content</source>
+                <target xml:lang="es" state="translated">Contenido de LLMs.txt</target>
+            </trans-unit>
+            <trans-unit id="properties.llmsTxt.ui.help.message" xml:space="preserve">
+                <source>Describe here, for AI agents and LLMs, what the website is about: a title, a short summary and the key topics. When left empty, the page title and meta description are used as the LLMs.txt content.</source>
+                <target xml:lang="es" state="translated">Describe aquí, para los agentes de IA y los LLM, de qué trata el sitio web: un título, un breve resumen y los temas principales. Si se deja vacío, se usan el título de la página y la meta descripción como contenido de LLMs.txt.</target>
+            </trans-unit>
+            <trans-unit id="properties.llmsTxtNavigationLevels" xml:space="preserve">
+                <source>Navigation depth in LLMs.txt</source>
+                <target xml:lang="es" state="translated">Profundidad de navegación en LLMs.txt</target>
+            </trans-unit>
+            <trans-unit id="properties.llmsTxtNavigationLevels.ui.help.message" xml:space="preserve">
+                <source>When an option is selected here, the LLMs.txt gets an additional section containing a menu link list at the selected depth.</source>
+                <target xml:lang="es" state="translated">Si se selecciona una opción aquí, la LLMs.txt recibe una sección adicional con una lista de enlaces del menú con la profundidad seleccionada.</target>
+            </trans-unit>
+            <trans-unit id="properties.llmsTxtNavigationLevels.selectBoxEditor.placeholder" xml:space="preserve">
+                <source>Do not render navigation</source>
+                <target xml:lang="es" state="translated">No mostrar la navegación</target>
+            </trans-unit>
+            <trans-unit id="properties.llmsTxtNavigationLevels.selectBoxEditor.values.1" xml:space="preserve">
+                <source>1 level</source>
+                <target xml:lang="es" state="translated">1 nivel</target>
+            </trans-unit>
+            <trans-unit id="properties.llmsTxtNavigationLevels.selectBoxEditor.values.2" xml:space="preserve">
+                <source>2 levels</source>
+                <target xml:lang="es" state="translated">2 niveles</target>
+            </trans-unit>
+            <trans-unit id="properties.llmsTxtNavigationLevels.selectBoxEditor.values.3" xml:space="preserve">
+                <source>3 levels</source>
+                <target xml:lang="es" state="translated">3 niveles</target>
+            </trans-unit>
+            <trans-unit id="properties.llmsTxtNavigationLevels.selectBoxEditor.values.4" xml:space="preserve">
+                <source>4 levels</source>
+                <target xml:lang="es" state="translated">4 niveles</target>
+            </trans-unit>
+            <trans-unit id="properties.llmsTxtNavigationLevels.selectBoxEditor.values.5" xml:space="preserve">
+                <source>5 levels</source>
+                <target xml:lang="es" state="translated">5 niveles</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
