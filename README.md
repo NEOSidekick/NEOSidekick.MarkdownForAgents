@@ -126,6 +126,67 @@ node type includes `Neos.Neos:Site` as a supertype:
     'Neos.Neos:Site': true
 ```
 
+## llms.txt
+
+The package serves an [`llms.txt`](https://llmstxt.org/) at the site root — e.g.
+`https://example.com/llms.txt`, and at each language root such as
+`https://example.com/en/llms.txt` for additional content dimensions. It always
+responds with `200` and `Content-Type: text/markdown`.
+
+Two properties are added to the `Neos.Neos:Site` node (inspector group **Agents
+llms.txt** in the SEO tab):
+
+- **llms.txt content** — a rich-text field for the human-authored part of the file
+  (title, summary, descriptive paragraphs). It is stored as HTML and converted to
+  Markdown for the response; internal links are resolved to canonical, absolute HTML
+  URLs. When left empty, a fallback is rendered from the site node's title and meta
+  description.
+- **Navigation levels** — an optional dropdown (1–5). When set, the main navigation is
+  appended under a `## Pages` heading (translatable) as a nested Markdown link list of
+  that many levels, starting at the site node. Menu entries that are pure groupings
+  (flyout containers with children but no own page) are rendered as plain labels, their
+  pages as links. Leave the dropdown empty to omit the navigation.
+
+So a filled-out `llms.txt` renders as:
+
+```markdown
+# Your Title
+
+> Your summary
+
+## Pages
+
+- [About us](https://example.com/about-us)
+- Products
+  - [Product A](https://example.com/products/a)
+```
+
+and an empty one falls back to:
+
+```markdown
+# Site Title
+
+The site's meta description.
+
+## Pages
+
+- …
+```
+
+As with the content signals above, the properties only appear if the homepage node
+type includes `Neos.Neos:Site` as a supertype.
+
+### Discovery
+
+The `/llms.txt` is advertised in two places so agents can find it:
+
+- **robots.txt** gets a comment line pointing to it, next to the Content-Signal
+  directive: `# LLM-friendly overview for AI agents: https://example.com/llms.txt`.
+- Every **HTML page** adds it to its `Link` header (alongside the page's own Markdown
+  alternate): `Link: <https://example.com/llms.txt>; rel="describedby"; type="text/markdown"`.
+  (`describedby` is a pragmatic choice — there is no registered link relation for
+  llms.txt yet.)
+
 ## Testing
 
 Useful checks after installation:
