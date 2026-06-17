@@ -7,5 +7,12 @@ prototype(Neos.Seo:RobotsTxt) {
             3 = ${'ai-input=' + (!!q(site).property('contentSignalAiInput') ? 'yes' : 'no')}
             @position = 'after userAgentAll'
         }
+        llmsTxt = Neos.Neos:NodeUri {
+            node = ${site}
+            format = 'txt.llms'
+            absolute = true
+            @position = 'after contentSignal'
+            @process.wrapAsComment = ${'# LLM-friendly overview for AI agents: ' + value}
+        }
     }
 }

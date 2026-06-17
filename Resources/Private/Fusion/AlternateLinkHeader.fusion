@@ -1,9 +1,23 @@
 prototype(Neos.Neos:Page) {
-    httpResponseHead.headers.Link = Neos.Neos:NodeUri {
-        node = ${documentNode}
-        absolute = true
-        format = 'markdown'
-        @process.wrapAsLinkHeader = ${'<' + value + '>; rel="alternate"; type="text/markdown"'}
-        @if.notInBackend = ${!documentNode.context.inBackend}
+    httpResponseHead.headers.Link.@process.appendAgentLinks = Neos.Fusion:Join {
+        @glue = ', '
+
+        existing = ${value}
+        existing.@if.has = ${value}
+
+        markdownAlternate = Neos.Neos:NodeUri {
+            @if.notInBackend = ${!documentNode.context.inBackend}
+            node = ${documentNode}
+            absolute = true
+            format = 'markdown'
+            @process.wrapAsLinkHeader = ${'<' + value + '>; rel="alternate"; type="text/markdown"'}
+        }
+        llmsTxt = Neos.Neos:NodeUri {
+            @if.notInBackend = ${!documentNode.context.inBackend}
+            node = ${site}
+            absolute = true
+            format = 'txt.llms'
+            @process.wrapAsLinkHeader = ${'<' + value + '>; rel="describedby"; type="text/markdown"'}
+        }
     }
 }
