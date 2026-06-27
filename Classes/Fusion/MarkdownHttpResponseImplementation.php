@@ -109,7 +109,16 @@ final class MarkdownHttpResponseImplementation extends HttpResponseImplementatio
     }
 
     /**
-     * @param array<string, int|string> $parts
+     * @param array{
+     *     scheme?: string,
+     *     host?: string,
+     *     port?: int,
+     *     user?: string,
+     *     pass?: string,
+     *     path?: string,
+     *     query?: string,
+     *     fragment?: string
+     * } $parts
      */
     private function isLocalLocation(array $parts, string $canonicalUri): bool
     {
@@ -126,7 +135,16 @@ final class MarkdownHttpResponseImplementation extends HttpResponseImplementatio
     }
 
     /**
-     * @param array<string, int|string> $parts
+     * @param array{
+     *     scheme?: string,
+     *     host?: string,
+     *     port?: int,
+     *     user?: string,
+     *     pass?: string,
+     *     path?: string,
+     *     query?: string,
+     *     fragment?: string
+     * } $parts
      */
     private function buildUrl(array $parts): string
     {

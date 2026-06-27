@@ -23,6 +23,7 @@ final class MarkdownHelper implements ProtectedContextAwareInterface
     }
 
     /**
+     * @param string $html HTML input to simplify and convert
      * @param array<string, mixed> $options
      */
     public function htmlToMarkdown(string $html, array $options = []): string

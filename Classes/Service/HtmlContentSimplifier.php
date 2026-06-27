@@ -68,7 +68,7 @@ final class HtmlContentSimplifier
 
     /**
      * @Flow\Inject(lazy = true)
-     * @var Translator
+     * @var Translator|null
      */
     protected $translator;
 
@@ -150,6 +150,7 @@ final class HtmlContentSimplifier
     }
 
     /**
+     * @param Crawler $crawler document crawler to mutate
      * @param array<int, string> $selectors
      */
     private function removeSelectors(Crawler $crawler, array $selectors): void
@@ -385,7 +386,7 @@ final class HtmlContentSimplifier
     }
 
     /**
-     * @param array<string, bool|null> $config
+     * @param array<string|int, bool|null> $config
      * @return array<int, string>
      */
     private function enabledImageSources(array $config): array
@@ -405,7 +406,9 @@ final class HtmlContentSimplifier
     }
 
     /**
+     * @param \DOMElement $image image element whose source should be normalized
      * @param array<int, string> $sourcePreference
+     * @param int $srcsetMaxCandidateWidth maximum preferred srcset width
      */
     private function preferredImageSource(\DOMElement $image, array $sourcePreference, int $srcsetMaxCandidateWidth): string
     {

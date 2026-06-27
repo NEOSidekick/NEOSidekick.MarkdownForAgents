@@ -25,9 +25,16 @@ final class ConversionOptions
     ];
 
     /**
+     * @param string $canonicalUri canonical HTML URI for the rendered page
+     * @param string $formNoticeLabel link label for converted forms
+     * @param string $iframeFallbackLabel link label for iframes without their own label
+     * @param bool|null $removeNavigation null falls back to the package setting
+     * @param bool|null $removeLinks null falls back to the package setting
+     * @param bool|null $keepEmptyAltImages null falls back to the package setting
      * @param array<string, bool> $removeSelectors selector => keep/remove, merged over the package defaults
      * @param array<string, string> $tagSeparatorAfter tag => separator inserted after the closing tag, merged over the package defaults
      * @param array<string, bool> $imageSourcePreference source => keep/remove, merged over the package defaults
+     * @param int|null $srcsetMaxCandidateWidth null falls back to the package setting
      */
     public function __construct(
         public readonly string $canonicalUri = '',
@@ -77,6 +84,7 @@ final class ConversionOptions
 
     /**
      * @param array<string, mixed> $options
+     * @param string $key option key to read
      */
     private static function readString(array $options, string $key): string
     {
@@ -97,6 +105,7 @@ final class ConversionOptions
 
     /**
      * @param array<string, mixed> $options
+     * @param string $key option key to read
      */
     private static function readNullableBool(array $options, string $key): ?bool
     {
@@ -117,6 +126,7 @@ final class ConversionOptions
 
     /**
      * @param array<string, mixed> $options
+     * @param string $key option key to read
      * @return array<string, bool>
      */
     private static function readSelectorMap(array $options, string $key): array
@@ -126,6 +136,7 @@ final class ConversionOptions
 
     /**
      * @param array<string, mixed> $options
+     * @param string $key option key to read
      * @return array<string, bool>
      */
     private static function readBooleanMap(array $options, string $key): array
@@ -137,7 +148,7 @@ final class ConversionOptions
         $value = $options[$key];
         if (!is_array($value)) {
             throw new \InvalidArgumentException(
-                sprintf('Markdown conversion option "%s" must be an array of "selector => bool", %s given.', $key, get_debug_type($value)),
+                sprintf('Markdown conversion option "%s" must be an array of "key => bool", %s given.', $key, get_debug_type($value)),
                 1769270004
             );
         }
@@ -146,7 +157,7 @@ final class ConversionOptions
         foreach ($value as $selector => $enabled) {
             if (!is_string($selector)) {
                 throw new \InvalidArgumentException(
-                    sprintf('Markdown conversion option "%s" must be keyed by selector strings.', $key),
+                    sprintf('Markdown conversion option "%s" must be keyed by strings.', $key),
                     1769270005
                 );
             }
@@ -158,6 +169,7 @@ final class ConversionOptions
 
     /**
      * @param array<string, mixed> $options
+     * @param string $key option key to read
      */
     private static function readNullableNonNegativeInt(array $options, string $key): ?int
     {
@@ -178,6 +190,7 @@ final class ConversionOptions
 
     /**
      * @param array<string, mixed> $options
+     * @param string $key option key to read
      * @return array<string, string>
      */
     private static function readStringMap(array $options, string $key): array
