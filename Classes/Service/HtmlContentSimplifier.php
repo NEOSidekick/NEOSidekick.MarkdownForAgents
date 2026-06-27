@@ -68,7 +68,7 @@ final class HtmlContentSimplifier
 
     /**
      * @Flow\Inject(lazy = true)
-     * @var Translator|null
+     * @var Translator
      */
     protected $translator;
 
