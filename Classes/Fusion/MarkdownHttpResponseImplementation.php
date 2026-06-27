@@ -6,6 +6,7 @@ namespace NEOSidekick\MarkdownForAgents\Fusion;
 
 use GuzzleHttp\Psr7\Message;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Uri;
 use Neos\Fusion\FusionObjects\HttpResponseImplementation;
 use Psr\Http\Message\ResponseInterface;
 
@@ -148,33 +149,6 @@ final class MarkdownHttpResponseImplementation extends HttpResponseImplementatio
      */
     private function buildUrl(array $parts): string
     {
-        $url = '';
-        if (isset($parts['scheme'])) {
-            $url .= $parts['scheme'] . '://';
-        }
-        if (isset($parts['user'])) {
-            $url .= $parts['user'];
-            if (isset($parts['pass'])) {
-                $url .= ':' . $parts['pass'];
-            }
-            $url .= '@';
-        }
-        if (isset($parts['host'])) {
-            $url .= $parts['host'];
-        }
-        if (isset($parts['port'])) {
-            $url .= ':' . $parts['port'];
-        }
-
-        $url .= $parts['path'] ?? '';
-
-        if (isset($parts['query'])) {
-            $url .= '?' . $parts['query'];
-        }
-        if (isset($parts['fragment'])) {
-            $url .= '#' . $parts['fragment'];
-        }
-
-        return $url;
+        return (string)Uri::fromParts($parts);
     }
 }
