@@ -20,11 +20,14 @@ final class ConversionOptions
         'keepEmptyAltImages',
         'removeSelectors',
         'tagSeparatorAfter',
+        'imageSourcePreference',
+        'srcsetMaxCandidateWidth',
     ];
 
     /**
      * @param array<string, bool> $removeSelectors selector => keep/remove, merged over the package defaults
      * @param array<string, string> $tagSeparatorAfter tag => separator inserted after the closing tag, merged over the package defaults
+     * @param array<string, bool> $imageSourcePreference source => keep/remove, merged over the package defaults
      */
     public function __construct(
         public readonly string $canonicalUri = '',
@@ -35,6 +38,8 @@ final class ConversionOptions
         public readonly ?bool $keepEmptyAltImages = null,
         public readonly array $removeSelectors = [],
         public readonly array $tagSeparatorAfter = [],
+        public readonly array $imageSourcePreference = [],
+        public readonly ?int $srcsetMaxCandidateWidth = null,
     ) {
     }
 
@@ -65,6 +70,8 @@ final class ConversionOptions
             keepEmptyAltImages: self::readNullableBool($options, 'keepEmptyAltImages'),
             removeSelectors: self::readSelectorMap($options, 'removeSelectors'),
             tagSeparatorAfter: self::readStringMap($options, 'tagSeparatorAfter'),
+            imageSourcePreference: self::readBooleanMap($options, 'imageSourcePreference'),
+            srcsetMaxCandidateWidth: self::readNullableNonNegativeInt($options, 'srcsetMaxCandidateWidth'),
         );
     }
 
@@ -114,6 +121,15 @@ final class ConversionOptions
      */
     private static function readSelectorMap(array $options, string $key): array
     {
+        return self::readBooleanMap($options, $key);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     * @return array<string, bool>
+     */
+    private static function readBooleanMap(array $options, string $key): array
+    {
         if (!array_key_exists($key, $options)) {
             return [];
         }
@@ -138,6 +154,26 @@ final class ConversionOptions
         }
 
         return $map;
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private static function readNullableNonNegativeInt(array $options, string $key): ?int
+    {
+        if (!array_key_exists($key, $options) || $options[$key] === null) {
+            return null;
+        }
+
+        $value = $options[$key];
+        if (!is_int($value) || $value < 0) {
+            throw new \InvalidArgumentException(
+                sprintf('Markdown conversion option "%s" must be a non-negative integer, %s given.', $key, get_debug_type($value)),
+                1769270008
+            );
+        }
+
+        return $value;
     }
 
     /**

@@ -24,6 +24,8 @@ final class ConversionOptionsTest extends UnitTestCase
         self::assertNull($options->keepEmptyAltImages);
         self::assertSame([], $options->removeSelectors);
         self::assertSame([], $options->tagSeparatorAfter);
+        self::assertSame([], $options->imageSourcePreference);
+        self::assertNull($options->srcsetMaxCandidateWidth);
     }
 
     /**
@@ -40,6 +42,8 @@ final class ConversionOptionsTest extends UnitTestCase
             'keepEmptyAltImages' => false,
             'removeSelectors' => ['.foo' => true, 'footer' => false],
             'tagSeparatorAfter' => ['dt' => ': ', 'dd' => ' '],
+            'imageSourcePreference' => ['data-markdown-src' => true, 'srcset' => false],
+            'srcsetMaxCandidateWidth' => 1200,
         ]);
 
         self::assertSame('https://example.test/page', $options->canonicalUri);
@@ -50,6 +54,8 @@ final class ConversionOptionsTest extends UnitTestCase
         self::assertFalse($options->keepEmptyAltImages);
         self::assertSame(['.foo' => true, 'footer' => false], $options->removeSelectors);
         self::assertSame(['dt' => ': ', 'dd' => ' '], $options->tagSeparatorAfter);
+        self::assertSame(['data-markdown-src' => true, 'srcset' => false], $options->imageSourcePreference);
+        self::assertSame(1200, $options->srcsetMaxCandidateWidth);
     }
 
     /**
@@ -124,5 +130,37 @@ final class ConversionOptionsTest extends UnitTestCase
         $options = ConversionOptions::fromArray(['removeSelectors' => ['.keep' => false, '.drop' => 1]]);
 
         self::assertSame(['.keep' => false, '.drop' => true], $options->removeSelectors);
+    }
+
+    /**
+     * @test
+     */
+    public function coercesImageSourcePreferenceValuesToBooleansAndKeepsFalse(): void
+    {
+        $options = ConversionOptions::fromArray(['imageSourcePreference' => ['srcset' => false, 'src' => 1]]);
+
+        self::assertSame(['srcset' => false, 'src' => true], $options->imageSourcePreference);
+    }
+
+    /**
+     * @test
+     */
+    public function rejectsANegativeSrcsetMaxCandidateWidth(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionCode(1769270008);
+
+        ConversionOptions::fromArray(['srcsetMaxCandidateWidth' => -1]);
+    }
+
+    /**
+     * @test
+     */
+    public function rejectsANonIntegerSrcsetMaxCandidateWidth(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionCode(1769270008);
+
+        ConversionOptions::fromArray(['srcsetMaxCandidateWidth' => '1600']);
     }
 }

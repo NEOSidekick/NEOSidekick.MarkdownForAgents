@@ -31,6 +31,24 @@ final class HtmlContentSimplifier
     protected array $tagSeparatorAfter = [];
 
     /**
+     * @Flow\InjectConfiguration(path="images.sourcePreference", package="NEOSidekick.MarkdownForAgents")
+     * @var array<string, bool>
+     */
+    protected array $imageSourcePreference = [
+        'data-markdown-src' => true,
+        'srcset' => true,
+        'data-srcset' => true,
+        'data-src' => true,
+        'src' => true,
+    ];
+
+    /**
+     * @Flow\InjectConfiguration(path="images.srcsetMaxCandidateWidth", package="NEOSidekick.MarkdownForAgents")
+     * @var int
+     */
+    protected int $srcsetMaxCandidateWidth = 1600;
+
+    /**
      * @Flow\InjectConfiguration(path="htmlContentSimplifier.keepEmptyAltImages", package="NEOSidekick.MarkdownForAgents")
      * @var bool
      */
@@ -60,6 +78,9 @@ final class HtmlContentSimplifier
         $crawler->addHtmlContent($html, 'UTF-8');
 
         $this->spaceOutLineBreaksInSingleLineContexts($crawler);
+        // Source elements are removed later, so picture candidates must be
+        // resolved while they are still available.
+        $this->normalizeImageSources($crawler, $options);
 
         // Must run before the replacements below, so forms/iframes inside removed
         // or data-markdown-skip regions are never turned into links.
@@ -137,6 +158,13 @@ final class HtmlContentSimplifier
             try {
                 $crawler->filter($selector)->each(function (Crawler $nodes): void {
                     foreach ($nodes as $node) {
+                        if ($node instanceof \DOMElement && strtolower($node->tagName) === 'source') {
+                            // Keep parser-attached fallback content below HTML5
+                            // source elements while dropping the source itself.
+                            $this->unwrapNode($node);
+                            continue;
+                        }
+
                         $this->removeNode($node);
                     }
                 });
@@ -319,6 +347,253 @@ final class HtmlContentSimplifier
                 $domNode->removeAttribute('href');
             }
         });
+    }
+
+    private function normalizeImageSources(Crawler $crawler, ConversionOptions $options): void
+    {
+        $sourcePreference = $this->imageSourcePreference($options);
+        if ($sourcePreference === []) {
+            return;
+        }
+
+        $srcsetMaxCandidateWidth = $options->srcsetMaxCandidateWidth ?? $this->srcsetMaxCandidateWidth;
+
+        $crawler->filter('img')->each(function (Crawler $node) use ($sourcePreference, $srcsetMaxCandidateWidth): void {
+            $domNode = $node->getNode(0);
+            if (!$domNode instanceof \DOMElement) {
+                return;
+            }
+
+            $source = $this->preferredImageSource($domNode, $sourcePreference, $srcsetMaxCandidateWidth);
+            if ($source !== '') {
+                $domNode->setAttribute('src', $source);
+            }
+        });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function imageSourcePreference(ConversionOptions $options): array
+    {
+        $sourcePreference = $this->imageSourcePreference;
+        foreach ($options->imageSourcePreference as $source => $enabled) {
+            $sourcePreference[$source] = $enabled;
+        }
+
+        return $this->enabledImageSources($sourcePreference);
+    }
+
+    /**
+     * @param array<string, bool|null> $config
+     * @return array<int, string>
+     */
+    private function enabledImageSources(array $config): array
+    {
+        $sources = [];
+        foreach ($config as $source => $enabled) {
+            if (!is_string($source)) {
+                continue;
+            }
+
+            if ($enabled && trim($source) !== '') {
+                $sources[] = $source;
+            }
+        }
+
+        return array_values(array_unique($sources));
+    }
+
+    /**
+     * @param array<int, string> $sourcePreference
+     */
+    private function preferredImageSource(\DOMElement $image, array $sourcePreference, int $srcsetMaxCandidateWidth): string
+    {
+        foreach ($sourcePreference as $source) {
+            if ($this->isSrcsetSource($source)) {
+                $url = $this->imageSourceFromSrcset(
+                    $this->srcsetValueForImage($image, $source),
+                    $srcsetMaxCandidateWidth
+                );
+            } else {
+                $url = trim($image->getAttribute($source));
+            }
+
+            if ($this->isFollowableUrl($url)) {
+                return $url;
+            }
+        }
+
+        return '';
+    }
+
+    private function srcsetValueForImage(\DOMElement $image, string $source): string
+    {
+        $srcset = trim($image->getAttribute($source));
+        if ($srcset !== '') {
+            return $srcset;
+        }
+
+        $parent = $image->parentNode;
+        if ($parent instanceof \DOMElement && strtolower($parent->tagName) === 'source') {
+            $srcset = trim($parent->getAttribute($source));
+            if ($srcset !== '') {
+                return $srcset;
+            }
+
+            $parent = $parent->parentNode;
+        }
+
+        if (!$parent instanceof \DOMElement || strtolower($parent->tagName) !== 'picture') {
+            return '';
+        }
+
+        $srcsets = [];
+        foreach ($parent->childNodes as $child) {
+            if (!$child instanceof \DOMElement || strtolower($child->tagName) !== 'source') {
+                continue;
+            }
+
+            $srcset = trim($child->getAttribute($source));
+            if ($srcset !== '') {
+                $srcsets[] = $srcset;
+            }
+        }
+
+        return implode(', ', $srcsets);
+    }
+
+    private function isSrcsetSource(string $source): bool
+    {
+        return $source === 'srcset' || str_ends_with($source, '-srcset');
+    }
+
+    private function imageSourceFromSrcset(string $srcset, int $srcsetMaxCandidateWidth): string
+    {
+        $candidates = $this->srcsetCandidates($srcset);
+        if ($candidates === []) {
+            return '';
+        }
+
+        $widthCandidates = array_values(array_filter($candidates, static fn (array $candidate): bool => isset($candidate['width'])));
+        if ($widthCandidates !== []) {
+            usort($widthCandidates, static fn (array $a, array $b): int => $a['width'] <=> $b['width']);
+            if ($srcsetMaxCandidateWidth <= 0) {
+                return (string)$widthCandidates[array_key_last($widthCandidates)]['url'];
+            }
+
+            $largerFallback = '';
+            for ($index = count($widthCandidates) - 1; $index >= 0; $index--) {
+                $candidate = $widthCandidates[$index];
+                if ($candidate['width'] <= $srcsetMaxCandidateWidth) {
+                    return (string)$candidate['url'];
+                }
+
+                $largerFallback = (string)$candidate['url'];
+            }
+
+            return $largerFallback;
+        }
+
+        $densityCandidates = array_values(array_filter($candidates, static fn (array $candidate): bool => isset($candidate['density'])));
+        if ($densityCandidates !== []) {
+            usort($densityCandidates, static fn (array $a, array $b): int => $a['density'] <=> $b['density']);
+            return (string)$densityCandidates[array_key_last($densityCandidates)]['url'];
+        }
+
+        return (string)$candidates[0]['url'];
+    }
+
+    /**
+     * @return array<int, array{url: string, width?: int, density?: float}>
+     */
+    private function srcsetCandidates(string $srcset): array
+    {
+        $candidates = [];
+        foreach ($this->splitSrcsetCandidates($srcset) as $candidate) {
+            if (preg_match('/^(?<url>.+?)\s+(?<descriptor>\d+w|\d+(?:\.\d+)?x)\s*$/', $candidate, $matches) === 1) {
+                $url = trim($matches['url']);
+                if (!$this->isUsefulSrcsetUrl($url)) {
+                    continue;
+                }
+
+                $descriptor = $matches['descriptor'];
+                if (str_ends_with($descriptor, 'w')) {
+                    $candidates[] = ['url' => $url, 'width' => (int)substr($descriptor, 0, -1)];
+                } else {
+                    $candidates[] = ['url' => $url, 'density' => (float)substr($descriptor, 0, -1)];
+                }
+            } else {
+                $url = $this->firstUsefulUrl($candidate);
+                if ($url !== '') {
+                    $candidates[] = ['url' => $url];
+                }
+            }
+        }
+
+        return $candidates;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function splitSrcsetCandidates(string $srcset): array
+    {
+        $candidates = [];
+        $candidate = '';
+        $length = strlen($srcset);
+        for ($index = 0; $index < $length; $index++) {
+            $character = $srcset[$index];
+            if ($character === ',' && $this->endsWithSrcsetDescriptor($candidate)) {
+                $candidates[] = trim($candidate);
+                $candidate = '';
+                continue;
+            }
+
+            $candidate .= $character;
+        }
+
+        $candidate = trim($candidate);
+        if ($candidate !== '') {
+            $candidates[] = $candidate;
+        }
+
+        return $candidates;
+    }
+
+    private function endsWithSrcsetDescriptor(string $candidate): bool
+    {
+        // A comma is a separator only after a complete candidate; URLs may
+        // contain commas themselves, for example in CDN transform paths.
+        return preg_match('/\s(?:\d+w|\d+(?:\.\d+)?x)\s*$/', $candidate) === 1;
+    }
+
+    private function firstUsefulUrl(string $value): string
+    {
+        $value = trim($value);
+        if ($this->isUsefulSrcsetUrl($value)) {
+            return $value;
+        }
+
+        foreach (preg_split('/[\s,]+/', $value) ?: [] as $part) {
+            $url = trim($part, " \t\n\r\0\x0B,");
+            if ($this->isUsefulSrcsetUrl($url)) {
+                return $url;
+            }
+        }
+
+        return '';
+    }
+
+    private function isUsefulSrcsetUrl(string $url): bool
+    {
+        if (!$this->isFollowableUrl($url) || preg_match('/\s/', $url) === 1) {
+            return false;
+        }
+
+        return preg_match('/^[a-z][a-z0-9+.-]*:/i', $url) === 1
+            || str_contains($url, '/')
+            || str_contains($url, '.');
     }
 
     private function removeEmptyAltImages(Crawler $crawler): void

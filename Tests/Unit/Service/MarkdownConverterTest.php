@@ -203,6 +203,31 @@ HTML;
     /**
      * @test
      */
+    public function convertsImagesUsingThePreferredSrcsetCandidate(): void
+    {
+        $html = <<<'HTML'
+<html>
+    <body>
+        <main>
+            <img
+                src="https://example.test/image-100.jpg"
+                srcset="https://example.test/image-400.jpg 400w, https://example.test/image-1200.jpg 1200w, https://example.test/image-2400.jpg 2400w"
+                alt="Campaign visual"
+            />
+        </main>
+    </body>
+</html>
+HTML;
+
+        $markdown = $this->createConverter()->convert($html);
+
+        self::assertStringContainsString('![Campaign visual](https://example.test/image-1200.jpg)', $markdown);
+        self::assertStringNotContainsString('image-100.jpg', $markdown);
+    }
+
+    /**
+     * @test
+     */
     public function dropsImagesWithoutAltTextWhenKeepEmptyAltImagesIsDisabled(): void
     {
         $html = <<<'HTML'

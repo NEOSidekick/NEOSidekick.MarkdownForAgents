@@ -1,5 +1,18 @@
 NEOSidekick:
   MarkdownForAgents:
+    images:
+      # Ordered source => bool map. Projects can unset defaults with false
+      # and add custom attributes such as data-original-src.
+      sourcePreference:
+        'data-markdown-src': true
+        'srcset': true
+        'data-srcset': true
+        'data-src': true
+        'src': true
+      # Applies only when picking width descriptors from srcset-like sources.
+      # The largest candidate up to this width is preferred; when all candidates
+      # are larger, the smallest larger candidate is used.
+      srcsetMaxCandidateWidth: 1600
     htmlContentSimplifier:
       # The booleans below are global fallback defaults. A per-call option passed
       # to the Eel helper (e.g. NEOSidekickMarkdown.htmlToMarkdown(html, {removeLinks: true}))
