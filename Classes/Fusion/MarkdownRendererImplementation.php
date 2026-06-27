@@ -93,7 +93,7 @@ final class MarkdownRendererImplementation extends AbstractFusionObject
      */
     private function parseHttpResponse(string $output): ?ResponseInterface
     {
-        if (strpos($output, 'HTTP/') !== 0) {
+        if (!str_starts_with($output, 'HTTP/')) {
             return null;
         }
 

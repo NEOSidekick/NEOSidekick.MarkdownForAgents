@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace NEOSidekick\MarkdownForAgents\Fusion;
 
 use GuzzleHttp\Psr7\Message;
-use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\Uri;
 use Neos\Fusion\FusionObjects\HttpResponseImplementation;
 use Psr\Http\Message\ResponseInterface;
@@ -41,48 +40,37 @@ final class MarkdownHttpResponseImplementation extends HttpResponseImplementatio
     private function markdownRedirectResponse(MarkdownRedirectResponse $redirectResponse): ResponseInterface
     {
         $sourceResponse = $redirectResponse->getResponse();
-        $headers = $this->headersWithoutBodyMetadata($sourceResponse->getHeaders());
 
-        $headers['Location'] = [
-            $this->markdownLocation($sourceResponse->getHeaderLine('Location'), $redirectResponse->getCanonicalUri()),
-        ];
-        $headers['Vary'] = [$this->appendVaryAccept($sourceResponse->getHeaderLine('Vary'))];
-
-        return new Response(
-            $sourceResponse->getStatusCode(),
-            $headers,
-            '',
-            $sourceResponse->getProtocolVersion(),
-            $sourceResponse->getReasonPhrase()
-        );
+        return $sourceResponse
+            ->withoutHeader('Content-Type')
+            ->withoutHeader('Content-Length')
+            ->withHeader(
+                'Location',
+                $this->markdownLocation($sourceResponse->getHeaderLine('Location'), $redirectResponse->getCanonicalUri())
+            )
+            ->withHeader('Vary', $this->appendVaryAccept($sourceResponse->getHeader('Vary')))
+            ->withBody($this->contentStreamFactory->createStream(''));
     }
 
     /**
-     * @param array<string, array<int, string>> $headers
-     * @return array<string, array<int, string>>
+     * @param array<int, string> $varyHeaders
+     * @return array<int, string>
      */
-    private function headersWithoutBodyMetadata(array $headers): array
+    private function appendVaryAccept(array $varyHeaders): array
     {
-        foreach (array_keys($headers) as $headerName) {
-            if (strcasecmp((string)$headerName, 'Content-Type') === 0 || strcasecmp((string)$headerName, 'Content-Length') === 0) {
-                unset($headers[$headerName]);
-            }
+        $parts = [];
+        foreach ($varyHeaders as $varyHeader) {
+            $parts = array_merge($parts, array_filter(array_map('trim', explode(',', $varyHeader))));
         }
 
-        return $headers;
-    }
-
-    private function appendVaryAccept(string $vary): string
-    {
-        $parts = array_filter(array_map('trim', explode(',', $vary)));
         foreach ($parts as $part) {
             if (strcasecmp($part, 'Accept') === 0) {
-                return implode(', ', $parts);
+                return $parts;
             }
         }
 
         $parts[] = 'Accept';
-        return implode(', ', $parts);
+        return $parts;
     }
 
     private function markdownLocation(string $location, string $canonicalUri): string
@@ -106,7 +94,7 @@ final class MarkdownHttpResponseImplementation extends HttpResponseImplementatio
             $parts['path'] = rtrim($path, '/') . '.md';
         }
 
-        return $this->buildUrl($parts);
+        return (string)Uri::fromParts($parts);
     }
 
     /**
@@ -133,22 +121,5 @@ final class MarkdownHttpResponseImplementation extends HttpResponseImplementatio
         }
 
         return strcasecmp((string)($parts['host'] ?? ''), (string)$canonicalParts['host']) === 0;
-    }
-
-    /**
-     * @param array{
-     *     scheme?: string,
-     *     host?: string,
-     *     port?: int,
-     *     user?: string,
-     *     pass?: string,
-     *     path?: string,
-     *     query?: string,
-     *     fragment?: string
-     * } $parts
-     */
-    private function buildUrl(array $parts): string
-    {
-        return (string)Uri::fromParts($parts);
     }
 }

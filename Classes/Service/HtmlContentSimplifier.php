@@ -386,17 +386,13 @@ final class HtmlContentSimplifier
     }
 
     /**
-     * @param array<string|int, bool|null> $config
+     * @param array<string, bool|null> $config
      * @return array<int, string>
      */
     private function enabledImageSources(array $config): array
     {
         $sources = [];
         foreach ($config as $source => $enabled) {
-            if (!is_string($source)) {
-                continue;
-            }
-
             if ($enabled && trim($source) !== '') {
                 $sources[] = $source;
             }
