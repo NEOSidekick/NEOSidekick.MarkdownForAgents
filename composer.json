@@ -60,6 +60,9 @@
         "neos": {
             "package-key": "NEOSidekick.MarkdownForAgents"
         },
+        "branch-alias": {
+            "dev-main": "1.2.x-dev"
+        },
         "applied-flow-migrations": []
     },
     "scripts": {

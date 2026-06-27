@@ -26,6 +26,12 @@ final class MarkdownSimplifier
         // Ensure that every heading is followed by a blank line unless one already exists
         $markdown = preg_replace('/^(#{1,6}\s.*)\n([^\n#])/m', "$1\n\n$2", $markdown) ?? $markdown;
 
+        // Card-like HTML often converts to adjacent Markdown links or images; keep them readable.
+        $markdown = preg_replace('/(\]\([^)]+\))(?=!\[|\[)/', "$1\n\n", $markdown) ?? $markdown;
+        $markdown = preg_replace('/(\]\([^)]+\))(?=\p{L}|\p{N})/u', "$1\n\n", $markdown) ?? $markdown;
+        $markdown = preg_replace('/(\p{L}|\p{N})(?=!\[)/u', "$1\n\n", $markdown) ?? $markdown;
+        $markdown = preg_replace('/(\))(?=!\[)/', "$1\n\n", $markdown) ?? $markdown;
+
         // Collapse three or more consecutive line breaks into exactly two
         $markdown = preg_replace('/\n{3,}/', "\n\n", $markdown) ?? $markdown;
 
