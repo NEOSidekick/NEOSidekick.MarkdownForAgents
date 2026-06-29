@@ -6,6 +6,7 @@ namespace NEOSidekick\MarkdownForAgents\Service;
 
 use League\HTMLToMarkdown\Converter\TableConverter;
 use League\HTMLToMarkdown\HtmlConverter;
+use NEOSidekick\MarkdownForAgents\Converter\LinkLabelWhitespaceConverter;
 use NEOSidekick\MarkdownForAgents\Dto\ConversionOptions;
 
 final class MarkdownConverter
@@ -35,6 +36,7 @@ final class MarkdownConverter
             'remove_nodes' => 'style script',
             'header_style' => 'atx',
         ]);
+        $converter->getEnvironment()->addConverter(new LinkLabelWhitespaceConverter());
         $converter->getEnvironment()->addConverter(new TableConverter());
 
         return $this->markdownSimplifier->simplify($converter->convert($simplifiedHtml));

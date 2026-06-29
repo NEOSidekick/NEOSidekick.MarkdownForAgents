@@ -435,6 +435,60 @@ HTML;
     /**
      * @test
      */
+    public function collapsesBlockLevelAnchorLabelsIntoSingleLineMarkdownLinks(): void
+    {
+        $html = <<<'HTML'
+<html>
+    <body>
+        <main>
+            <a href="/organisation/finanztransparenz">
+                <div>
+                    <p>30.362</p>
+                    <p>Tassen Kaffee getrunken</p>
+                    <span>Finanztransparenz</span>
+                </div>
+            </a>
+        </main>
+    </body>
+</html>
+HTML;
+
+        $markdown = $this->createConverter()->convert($html);
+
+        self::assertStringContainsString(
+            '[30.362 Tassen Kaffee getrunken Finanztransparenz](/organisation/finanztransparenz)',
+            $markdown
+        );
+        self::assertStringNotContainsString("[30.362\n\n", $markdown);
+        self::assertStringNotContainsString("getrunken\n\nFinanztransparenz", $markdown);
+    }
+
+    /**
+     * @test
+     */
+    public function collapsesBlockLinkLabelsWithoutBreakingNestedImageMarkdown(): void
+    {
+        $html = <<<'HTML'
+<html>
+    <body>
+        <main>
+            <a href="/article">
+                <img src="/cover.jpg" alt="Cover">
+                <p>Read more</p>
+            </a>
+        </main>
+    </body>
+</html>
+HTML;
+
+        $markdown = $this->createConverter()->convert($html);
+
+        self::assertStringContainsString('[![Cover](/cover.jpg) Read more](/article)', $markdown);
+    }
+
+    /**
+     * @test
+     */
     public function removesElementsMarkedAsSidekickSkip(): void
     {
         $html = <<<'HTML'
