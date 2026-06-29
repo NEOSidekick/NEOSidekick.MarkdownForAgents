@@ -162,4 +162,48 @@ final class MarkdownSimplifierTest extends UnitTestCase
             $this->simplifier->simplify("# h1\nText\n## h2\n\n### h3\n\n#### h4\n\n##### h5")
         );
     }
+
+    /**
+     * @test
+     */
+    public function separatesAdjacentLinksAndImages(): void
+    {
+        self::assertSame(
+            "[First](/first)\n\n[Second](/second)\n\n![Alt](/image.jpg)",
+            $this->simplifier->simplify('[First](/first)[Second](/second)![Alt](/image.jpg)')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function separatesALinkFromDirectlyFollowingText(): void
+    {
+        self::assertSame(
+            "[More](/more)\n\nFollow-up text",
+            $this->simplifier->simplify('[More](/more)Follow-up text')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function separatesTextFromADirectlyFollowingImage(): void
+    {
+        self::assertSame(
+            "Caption text\n\n![Alt](/image.jpg)",
+            $this->simplifier->simplify('Caption text![Alt](/image.jpg)')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function separatesParenthesizedTextFromADirectlyFollowingImage(): void
+    {
+        self::assertSame(
+            "Caption (detail)\n\n![Alt](/image.jpg)",
+            $this->simplifier->simplify('Caption (detail)![Alt](/image.jpg)')
+        );
+    }
 }

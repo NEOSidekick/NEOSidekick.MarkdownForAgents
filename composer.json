@@ -15,6 +15,7 @@
         "php": "^8.2",
         "neos/neos": "~8.4 || dev-master",
         "neos/seo": "^3.2",
+        "guzzlehttp/psr7": "^2.4",
         "league/html-to-markdown": "^5.1",
         "symfony/dom-crawler": "^5.4 || ^6.0",
         "symfony/css-selector": "^5.4 || ^6.0"
@@ -59,6 +60,9 @@
     "extra": {
         "neos": {
             "package-key": "NEOSidekick.MarkdownForAgents"
+        },
+        "branch-alias": {
+            "dev-main": "1.2.x-dev"
         },
         "applied-flow-migrations": []
     },

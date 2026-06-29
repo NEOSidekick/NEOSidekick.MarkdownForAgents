@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NEOSidekick\MarkdownForAgents\Tests\Unit\Fusion;
 
+use NEOSidekick\MarkdownForAgents\Fusion\MarkdownRedirectResponse;
 use NEOSidekick\MarkdownForAgents\Fusion\MarkdownRendererImplementation;
 use NEOSidekick\MarkdownForAgents\Service\MarkdownConverter;
 use Neos\Flow\Tests\UnitTestCase;
@@ -153,6 +154,36 @@ final class MarkdownRendererImplementationTest extends UnitTestCase
         self::assertStringContainsString('Real Body', $markdown);
         self::assertStringNotContainsString('HTTP/1.1', $markdown);
         self::assertStringNotContainsString('Content-Type', $markdown);
+    }
+
+    /**
+     * @test
+     */
+    public function htmlFallbackReturnsRedirectMarkerForRedirectHttpMessages(): void
+    {
+        $runtime = new MarkdownRendererTestRuntime(
+            [
+                'type' => 'Example.Site:Document.Archive',
+                'suffix' => '.Markdown',
+                'fallbackToHtml' => true,
+                'canonicalUri' => 'https://example.test/news/2026',
+            ],
+            [
+                '/type<Example.Site:Document.Archive.Markdown>' => false,
+            ],
+            [
+                '/renderer/element<Example.Site:Document.Archive>' => "HTTP/1.1 301 Moved Permanently\r\nLocation: /news\r\n\r\n",
+            ]
+        );
+        $renderer = new MarkdownRendererImplementation($runtime, '/renderer', 'NEOSidekick.MarkdownForAgents:MarkdownRenderer');
+        $this->inject($renderer, 'markdownConverter', new MarkdownConverter());
+
+        $result = $renderer->evaluate();
+
+        self::assertInstanceOf(MarkdownRedirectResponse::class, $result);
+        self::assertSame(301, $result->getResponse()->getStatusCode());
+        self::assertSame('/news', $result->getResponse()->getHeaderLine('Location'));
+        self::assertSame('https://example.test/news/2026', $result->getCanonicalUri());
     }
 
     /**

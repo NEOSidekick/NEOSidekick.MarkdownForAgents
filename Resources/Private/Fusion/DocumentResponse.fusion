@@ -1,4 +1,6 @@
 prototype(NEOSidekick.MarkdownForAgents:DocumentResponse) < prototype(Neos.Fusion:Http.Message) {
+    @class = 'NEOSidekick\\MarkdownForAgents\\Fusion\\MarkdownHttpResponseImplementation'
+
     # Internal links must stay canonical HTML, not the ".md" variant. NodeUri takes a
     # format option; ConvertUris does not, hence the subclass.
     prototype(Neos.Neos:NodeUri) {

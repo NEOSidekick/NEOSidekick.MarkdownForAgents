@@ -9,6 +9,7 @@ use NEOSidekick\MarkdownForAgents\Dto\ConversionOptions;
 use NEOSidekick\MarkdownForAgents\Service\MarkdownConverter;
 use Neos\Flow\Annotations as Flow;
 use Neos\Fusion\FusionObjects\AbstractFusionObject;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 
 final class MarkdownRendererImplementation extends AbstractFusionObject
@@ -31,7 +32,10 @@ final class MarkdownRendererImplementation extends AbstractFusionObject
      */
     protected $logger;
 
-    public function evaluate(): string
+    /**
+     * @return string|MarkdownRedirectResponse
+     */
+    public function evaluate()
     {
         try {
             return $this->renderMarkdown();
@@ -41,7 +45,7 @@ final class MarkdownRendererImplementation extends AbstractFusionObject
         }
     }
 
-    private function renderMarkdown(): string
+    private function renderMarkdown(): string|MarkdownRedirectResponse
     {
         $type = $this->fusionValue('type');
         if (!is_string($type) || $type === '') {
@@ -69,22 +73,38 @@ final class MarkdownRendererImplementation extends AbstractFusionObject
         // Render the whole element: Neos applies a document prototype's @context only
         // when the element itself is evaluated, not when rendering a sub-path.
         $fallbackPath = sprintf('%s/element<%s>', $this->path, $type);
-        $html = $this->stripHttpMessageHead($this->renderWithoutContentCache($fallbackPath));
+        $output = $this->renderWithoutContentCache($fallbackPath);
+        $sourceResponse = $this->parseHttpResponse($output);
+        if ($sourceResponse instanceof ResponseInterface) {
+            if ($this->isRedirectResponse($sourceResponse)) {
+                return new MarkdownRedirectResponse($sourceResponse, $this->safeFusionString('canonicalUri'));
+            }
+            $html = (string)$sourceResponse->getBody();
+        } else {
+            $html = $output;
+        }
         $this->assertNoExceptionOutput($html);
 
         return $this->markdownConverter->convert($html, $this->conversionOptions());
     }
 
     /**
-     * A rendered document is a serialized Neos.Fusion:Http.Message; return its body.
+     * A rendered document can be a serialized Neos.Fusion:Http.Message.
      */
-    private function stripHttpMessageHead(string $output): string
+    private function parseHttpResponse(string $output): ?ResponseInterface
     {
-        if (strpos($output, 'HTTP/') !== 0) {
-            return $output;
+        if (!str_starts_with($output, 'HTTP/')) {
+            return null;
         }
 
-        return (string)Message::parseResponse($output)->getBody();
+        return Message::parseResponse($output);
+    }
+
+    private function isRedirectResponse(ResponseInterface $response): bool
+    {
+        return $response->getStatusCode() >= 300
+            && $response->getStatusCode() < 400
+            && trim($response->getHeaderLine('Location')) !== '';
     }
 
     private function conversionOptions(): ConversionOptions

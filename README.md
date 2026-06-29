@@ -422,6 +422,70 @@ NEOSidekick:
 
 Set a tag to an empty string to insert no separator after it.
 
+#### Image source selection
+
+Markdown has no `srcset`, so image conversion writes exactly one URL into
+`![alt](url)`. Browser HTML often keeps a small thumbnail in `src` and puts larger
+variants into `srcset`; using the raw `src` would make the Markdown image too small
+for agents to inspect useful visual content.
+
+Before conversion, the package normalizes every `<img>` `src` according to an
+ordered `source => bool` map:
+
+```yaml
+NEOSidekick:
+  MarkdownForAgents:
+    images:
+      sourcePreference:
+        'data-markdown-src': true
+        'srcset': true
+        'data-srcset': true
+        'data-src': true
+        'src': true
+      srcsetMaxCandidateWidth: 1600
+```
+
+The default preference means:
+
+1. Use `data-markdown-src` when a project renders an explicit agent-friendly image
+   URL.
+2. Otherwise parse `srcset` and choose the largest width candidate up to
+   `srcsetMaxCandidateWidth`. If all candidates are larger, choose the smallest
+   larger one. Set `srcsetMaxCandidateWidth` to `0` to always choose the largest
+   width candidate.
+3. If the image is lazy-loaded, apply the same picking logic to `data-srcset`, then
+   fall back to `data-src`.
+4. Fall back to `src`.
+
+The map is intentionally override-friendly: disable a default with `false`, use
+the conventional `data-markdown-src` attribute, or add another attribute source
+when project Fusion already renders a better agent-facing image URL than the
+browser-facing `src`:
+
+```yaml
+NEOSidekick:
+  MarkdownForAgents:
+    images:
+      sourcePreference:
+        'data-original-src': true
+        'data-markdown-src': true
+        'srcset': true
+        'data-srcset': true
+        'data-src': true
+        'src': true
+```
+
+Any enabled source named `srcset` or ending in `-srcset` is parsed as a srcset
+candidate list and uses `srcsetMaxCandidateWidth`. This keeps custom lazy-loading
+schemes simple: render an additional attribute such as `data-markdown-srcset` in
+your project and add it to `sourcePreference`. When an image is wrapped in
+`<picture>`, matching `srcset`-like attributes on child `<source>` elements are
+considered before those helper elements are removed from the Markdown input.
+Commas inside candidate URLs are kept when the candidate has a width or density
+descriptor; unsafe candidates such as `data:` URLs are skipped. If a srcset-like
+attribute is not valid `srcset`, the converter does not fail; it falls back to the
+first useful URL it can read from the value.
+
 Site packages can also explicitly mark non-content chrome with `data-markdown-skip`
 when it should be omitted from Markdown, so no extra Fusion component is needed.
 
@@ -465,15 +529,20 @@ renderer = NEOSidekick.MarkdownForAgents:MarkdownRenderer {
             '.pricing-widget' = true   # drop an extra selector for this render
             'footer' = false           # keep a default that is normally removed
         }
+        imageSourcePreference = Neos.Fusion:DataStructure {
+            'srcset' = false            # use data-markdown-src or src for this render
+        }
+        srcsetMaxCandidateWidth = 1200
     }
 }
 ```
 
 Accepted keys are `removeSelectors`, `tagSeparatorAfter`, `removeNavigation`,
-`removeLinks` and `keepEmptyAltImages`; the labels `canonicalUri`,
-`formNoticeLabel` and `iframeFallbackLabel` stay on their own properties and always
-win. Unknown keys are rejected with an exception, so a typo fails loudly instead of
-being silently ignored.
+`removeLinks`, `keepEmptyAltImages`, `imageSourcePreference` and
+`srcsetMaxCandidateWidth`; the labels `canonicalUri`, `formNoticeLabel` and
+`iframeFallbackLabel` stay on their own properties and always win. Unknown keys are
+rejected with an exception, so a typo fails loudly instead of being silently
+ignored.
 
 ### Eel Helper
 
@@ -489,13 +558,13 @@ The helper accepts the same options as the converter:
 markdown = ${NEOSidekickMarkdown.htmlToMarkdown(value, {
     removeNavigation: true,
     removeLinks: false,
-    keepEmptyAltImages: true
+    keepEmptyAltImages: true,
+    srcsetMaxCandidateWidth: 1200
 })}
 ```
 
-Available options. Each one defaults to the matching `htmlContentSimplifier.*`
-package setting; passing it here deliberately overrides that fallback for the
-single conversion:
+Available options. Each one defaults to the matching package setting; passing it
+here deliberately overrides that fallback for the single conversion:
 
 - `removeNavigation`: also removes the configured `navigationSelectors` before
   conversion. Defaults to `true` (configurable via
@@ -512,6 +581,11 @@ single conversion:
 - `tagSeparatorAfter`: a `tag => separator` map merged over the configured
   `htmlContentSimplifier.tagSeparatorAfter`; inserts the given string after each
   closing tag (e.g. `dt: ': '`), or an empty string to insert nothing.
+- `imageSourcePreference`: a `source => bool` map merged over the configured
+  `images.sourcePreference`; sources named `srcset` or ending in `-srcset` are
+  parsed as candidate lists, other sources are treated as image attribute names.
+- `srcsetMaxCandidateWidth`: maximum preferred width when selecting a width
+  candidate from a srcset-like source. `0` means "choose the largest candidate".
 
 Unknown option keys are rejected with an exception, so a typo fails loudly
 instead of being silently ignored.
