@@ -27,7 +27,9 @@ final class LinkLabelWhitespaceConverter extends LinkConverter
 
         // Block-style anchors must still become one Markdown link label.
         $label = substr($markdown, 1, $labelEnd - 1);
-        $normalizedLabel = preg_replace('/(?:[ \t]*\R[ \t]*)+/u', ' ', $label) ?? $label;
+        $normalizedLabel = preg_replace('/(^|\R)[ \t]{0,3}#{1,6}[ \t]+/u', '$1', $label) ?? $label;
+        $normalizedLabel = preg_replace('/(?:[ \t]*\R[ \t]*)+/u', ' ', $normalizedLabel)
+            ?? $normalizedLabel;
         $normalizedLabel = preg_replace('/(\]\([^)]+\))(?=\p{L}|\p{N})/u', '$1 ', $normalizedLabel)
             ?? $normalizedLabel;
         $normalizedLabel = preg_replace('/[ \t]{2,}/', ' ', $normalizedLabel) ?? $normalizedLabel;

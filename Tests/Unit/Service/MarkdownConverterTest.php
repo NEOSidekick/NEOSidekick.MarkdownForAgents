@@ -489,6 +489,47 @@ HTML;
     /**
      * @test
      */
+    public function collapsesHeadingsInsideBlockLinkLabelsIntoPlainText(): void
+    {
+        $html = <<<'HTML'
+<html>
+    <body>
+        <main>
+            <a href="https://www.neos.eu/mitmachen/jobs">
+                <h3>Jobs bei Neos</h3>
+                <p>Wir machen nicht nur Politik für Freiheit, Fortschritt und Gerechtigkeit.</p>
+                <span>Bewirb dich jetzt!</span>
+            </a>
+        </main>
+    </body>
+</html>
+HTML;
+
+        $markdown = $this->createConverter()->convert($html);
+
+        self::assertStringContainsString(
+            '[Jobs bei Neos Wir machen nicht nur Politik für Freiheit, Fortschritt und Gerechtigkeit. Bewirb dich jetzt!](https://www.neos.eu/mitmachen/jobs)',
+            $markdown
+        );
+        self::assertStringNotContainsString('### Jobs bei Neos', $markdown);
+        self::assertStringNotContainsString("[\n\n###", $markdown);
+    }
+
+    /**
+     * @test
+     */
+    public function keepsHashCharactersInsideInlineLinkLabels(): void
+    {
+        $html = '<html><body><main><a href="/jobs">C# developer role</a></main></body></html>';
+
+        $markdown = $this->createConverter()->convert($html);
+
+        self::assertStringContainsString('[C# developer role](/jobs)', $markdown);
+    }
+
+    /**
+     * @test
+     */
     public function removesElementsMarkedAsSidekickSkip(): void
     {
         $html = <<<'HTML'
