@@ -177,6 +177,28 @@ final class MarkdownSimplifierTest extends UnitTestCase
     /**
      * @test
      */
+    public function separatesTextFromDirectlyFollowingLinkWithASpace(): void
+    {
+        self::assertSame(
+            '04.08.2025 [Frauen](/themen/frauen)',
+            $this->simplifier->simplify('04.08.2025[Frauen](/themen/frauen)')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function keepsAlreadySpacedTextBeforeLinksUntouched(): void
+    {
+        self::assertSame(
+            '04.08.2025 [Frauen](/themen/frauen)',
+            $this->simplifier->simplify('04.08.2025 [Frauen](/themen/frauen)')
+        );
+    }
+
+    /**
+     * @test
+     */
     public function separatesALinkFromDirectlyFollowingText(): void
     {
         self::assertSame(
