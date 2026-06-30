@@ -489,6 +489,36 @@ HTML;
     /**
      * @test
      */
+    public function collapsesLinkedImageHeadingCardsIntoPlainLinkLabels(): void
+    {
+        $html = <<<'HTML'
+<html>
+    <body>
+        <main>
+            <a href="/bundesregierung">
+                <img src="/team.jpg" alt="Beate Meinl-Reisinger Christoph Wiederkehr Sepp Schellhorn NEOS">
+                <h3>Unsere Regierungsmitglieder</h3>
+                <p>NEOS stellt zwei zentrale Stimmen in der Bundesregierung.</p>
+                <span>Lerne unsere Regierungsmitglieder kennen</span>
+            </a>
+        </main>
+    </body>
+</html>
+HTML;
+
+        $markdown = $this->createConverter()->convert($html);
+
+        self::assertStringContainsString(
+            '[![Beate Meinl-Reisinger Christoph Wiederkehr Sepp Schellhorn NEOS](/team.jpg) Unsere Regierungsmitglieder NEOS stellt zwei zentrale Stimmen in der Bundesregierung. Lerne unsere Regierungsmitglieder kennen](/bundesregierung)',
+            $markdown
+        );
+        self::assertStringNotContainsString("[![Beate Meinl-Reisinger\n\n###", $markdown);
+        self::assertStringNotContainsString('### Unsere Regierungsmitglieder', $markdown);
+    }
+
+    /**
+     * @test
+     */
     public function collapsesHeadingsInsideBlockLinkLabelsIntoPlainText(): void
     {
         $html = <<<'HTML'

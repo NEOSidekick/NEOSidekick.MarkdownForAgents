@@ -1,4 +1,5 @@
 <?php
+
 namespace Neos\Flow\Build;
 
 /*
@@ -10,6 +11,19 @@ namespace Neos\Flow\Build;
  * information, please view the LICENSE file which was distributed with this
  * source code.
  */
+
+spl_autoload_register(static function (string $className): void {
+    $prefix = 'NEOSidekick\\MarkdownForAgents\\';
+    if (!str_starts_with($className, $prefix)) {
+        return;
+    }
+
+    // Prefer the package source under test over an installed project package.
+    $classFile = __DIR__ . '/../Classes/' . str_replace('\\', '/', substr($className, strlen($prefix))) . '.php';
+    if (is_file($classFile)) {
+        require $classFile;
+    }
+}, true, true);
 
 $composerAutoloader = __DIR__ . '/../../../Packages/Libraries/autoload.php';
 if (!file_exists($composerAutoloader)) {
@@ -38,14 +52,17 @@ require_once(FLOW_PATH_FLOW . 'Classes/Error/Debugger.php');
  * @param string $className
  * @return void
  */
-function loadClassForTesting($className) {
+function loadClassForTesting($className)
+{
     $classNameParts = explode('\\', $className);
     if (!is_array($classNameParts)) {
         return;
     }
 
     foreach (new \DirectoryIterator(__DIR__ . '/../../../Packages/') as $fileInfo) {
-        if (!$fileInfo->isDir() || $fileInfo->isDot() || $fileInfo->getFilename() === 'Libraries') continue;
+        if (!$fileInfo->isDir() || $fileInfo->isDot() || $fileInfo->getFilename() === 'Libraries') {
+            continue;
+        }
 
         $classFilePathAndName = $fileInfo->getPathname() . '/';
         foreach ($classNameParts as $index => $classNamePart) {

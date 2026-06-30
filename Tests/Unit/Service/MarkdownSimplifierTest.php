@@ -166,12 +166,105 @@ final class MarkdownSimplifierTest extends UnitTestCase
     /**
      * @test
      */
+    public function removesEmptyHeadingMarkers(): void
+    {
+        self::assertSame(
+            "# Real heading\n\nBody",
+            $this->simplifier->simplify("#\n\n# Real heading\n\n###\n\nBody")
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function keepsEmptyHeadingMarkersInsideFencedCodeBlocks(): void
+    {
+        $markdown = <<<'MARKDOWN'
+```md
+#
+###
+```
+
+#
+
+# Real heading
+MARKDOWN;
+
+        $expected = <<<'MARKDOWN'
+```md
+#
+###
+```
+
+# Real heading
+MARKDOWN;
+
+        self::assertSame($expected, $this->simplifier->simplify($markdown));
+    }
+
+    /**
+     * @test
+     */
+    public function keepsIndentedHashCodeLines(): void
+    {
+        self::assertSame(
+            "Code example:\n\n    #\n\n# Real heading",
+            $this->simplifier->simplify("Code example:\n\n    #\n\n#\n\n# Real heading")
+        );
+    }
+
+    /**
+     * @test
+     */
     public function separatesAdjacentLinksAndImages(): void
     {
         self::assertSame(
             "[First](/first)\n\n[Second](/second)\n\n![Alt](/image.jpg)",
             $this->simplifier->simplify('[First](/first)[Second](/second)![Alt](/image.jpg)')
         );
+    }
+
+    /**
+     * @test
+     */
+    public function flattensBlockSyntaxInsideMarkdownLinkLabels(): void
+    {
+        self::assertSame(
+            '[![Team](/team.jpg) Unsere Regierungsmitglieder NEOS stellt zwei zentrale Stimmen.](/bundesregierung)',
+            $this->simplifier->simplify(
+                "[![Team](/team.jpg)\n\n### Unsere Regierungsmitglieder NEOS stellt zwei zentrale Stimmen.](/bundesregierung)"
+            )
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function keepsFencedCodeBlocksWhenFlatteningMarkdownLinkLabels(): void
+    {
+        $markdown = <<<'MARKDOWN'
+```md
+[![Team](/team.jpg)
+
+Unsere Regierungsmitglieder](/bundesregierung)
+```
+
+[![Team](/team.jpg)
+
+Unsere Regierungsmitglieder](/bundesregierung)
+MARKDOWN;
+
+        $expected = <<<'MARKDOWN'
+```md
+[![Team](/team.jpg)
+
+Unsere Regierungsmitglieder](/bundesregierung)
+```
+
+[![Team](/team.jpg) Unsere Regierungsmitglieder](/bundesregierung)
+MARKDOWN;
+
+        self::assertSame($expected, $this->simplifier->simplify($markdown));
     }
 
     /**
