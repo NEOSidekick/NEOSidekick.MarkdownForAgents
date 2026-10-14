@@ -227,6 +227,11 @@ node serves that direct request:
 curl https://example.com/index.md
 ```
 
+When the site root itself has a path segment, e.g. the language prefix of a site
+without an empty default dimension segment, the homepage and its llms.txt get a
+separating slash: `https://example.com/de/index.md` and
+`https://example.com/de/llms.txt`.
+
 #### Accept header
 
 Agents can also request the regular URL and express that they prefer Markdown:
