@@ -271,6 +271,10 @@ Content-Type: text/markdown; charset=utf-8
 Vary: Accept
 ```
 
+HTML responses of the same pages send `Vary: Accept` as well. Without it, a shared
+cache in front of Neos (e.g. a hosting proxy that keys on the URL) would hand a cached
+HTML page to agents that ask for Markdown.
+
 ### Linking HTML and Markdown
 
 Every page cross-references its two representations through HTTP `Link` headers,

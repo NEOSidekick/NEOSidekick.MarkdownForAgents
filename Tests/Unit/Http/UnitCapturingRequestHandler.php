@@ -13,9 +13,16 @@ final class UnitCapturingRequestHandler implements RequestHandlerInterface
 {
     public ServerRequestInterface $request;
 
+    private ResponseInterface $response;
+
+    public function __construct(?ResponseInterface $response = null)
+    {
+        $this->response = $response ?? new Response(204);
+    }
+
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $this->request = $request;
-        return new Response(204);
+        return $this->response;
     }
 }
