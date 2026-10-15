@@ -12,7 +12,7 @@ final class AcceptHeaderMatcherTest extends UnitTestCase
     /**
      * @return array<string, array{0: string, 1: bool}>
      */
-    public function acceptHeaders(): array
+    public static function acceptHeaders(): array
     {
         return [
             'direct markdown' => ['text/markdown', true],
