@@ -117,6 +117,15 @@ inspector group **Agents Content Signals** in the SEO tab:
 Each option is stored as a boolean and defaults to enabled. Disabled options are
 rendered as `no` in the generated `Content-Signal` directive.
 
+Site nodes that existed before the installation have no stored value yet. The
+`Content-Signal` directive then uses the node type default, but the inspector shows
+the unset checkboxes as unchecked. Store the defaults once after installing, for
+each homepage node type:
+
+```bash
+./flow node:repair --node-type Vendor.Site:Document.HomePage --only addMissingDefaultValues
+```
+
 If you cannot see these fields on the homepage node, make sure your homepage
 node type includes `Neos.Neos:Site` as a supertype:
 
@@ -226,6 +235,11 @@ node serves that direct request:
 ```bash
 curl https://example.com/index.md
 ```
+
+When the site root itself has a path segment, e.g. the language prefix of a site
+without an empty default dimension segment, the homepage and its llms.txt get a
+separating slash: `https://example.com/de/index.md` and
+`https://example.com/de/llms.txt`.
 
 #### Accept header
 

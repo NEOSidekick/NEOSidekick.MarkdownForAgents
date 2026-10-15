@@ -1,10 +1,15 @@
 prototype(Neos.Seo:RobotsTxt) {
     data {
         contentSignal = Neos.Fusion:Join {
+            # Site nodes created before the installation store no value yet; they get the node type default, not "no"
+            @context.signals = Neos.Fusion:Map {
+                items = ${{aiTrain: 'contentSignalAiTrain', search: 'contentSignalSearch', aiInput: 'contentSignalAiInput'}}
+                itemRenderer = ${(Type.isBoolean(q(site).property(item)) ? q(site).property(item) : site.nodeType.defaultValuesForProperties[item]) ? 'yes' : 'no'}
+            }
             @glue = ', '
-            1 = ${'Content-Signal: ai-train=' + (!!q(site).property('contentSignalAiTrain') ? 'yes' : 'no')}
-            2 = ${'search=' + (!!q(site).property('contentSignalSearch') ? 'yes' : 'no')}
-            3 = ${'ai-input=' + (!!q(site).property('contentSignalAiInput') ? 'yes' : 'no')}
+            1 = ${'Content-Signal: ai-train=' + signals.aiTrain}
+            2 = ${'search=' + signals.search}
+            3 = ${'ai-input=' + signals.aiInput}
             @position = 'after userAgentAll'
         }
         llmsTxt = Neos.Neos:NodeUri {

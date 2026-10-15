@@ -1,3 +1,23 @@
+# A site root with a path segment (e.g. the language prefix "de" when empty dimension
+# segments are disabled) needs a separator, otherwise "{node}llms.txt" resolves to
+# "/dellms.txt". An empty site path resolves to "/llms.txt", as Flow trims the leading
+# slash. This route cannot match "/llms.txt", so the next one still serves it.
+-
+  name: 'Markdown for Agents - llms.txt below a site path'
+  uriPattern: '{node}/llms.txt'
+  defaults:
+    '@package': 'Neos.Neos'
+    '@controller': 'Frontend\Node'
+    '@format': 'txt.llms'
+    '@action': 'show'
+  routeParts:
+    node:
+      handler: Neos\Neos\Routing\FrontendNodeRoutePartHandlerInterface
+      options:
+        onlyMatchSiteNodes: true
+  appendExceedingArguments: true
+  httpMethods: ['GET']
+
 -
   name: 'Markdown for Agents - llms.txt'
   uriPattern: '{node}llms.txt'
@@ -15,8 +35,24 @@
   httpMethods: ['GET']
 
 # The site root has an empty path segment, so "{node}.md" would render the homepage
-# as "/.md", which many web servers reject. This site-node-only route serves it as
-# "/index.md" instead.
+# as "/.md", which many web servers reject. These site-node-only routes serve it as
+# "/index.md" instead, with the same separator handling as llms.txt above.
+-
+  name: 'Markdown for Agents - Homepage below a site path'
+  uriPattern: '{node}/index.md'
+  defaults:
+    '@package': 'Neos.Neos'
+    '@controller': 'Frontend\Node'
+    '@format': 'markdown'
+    '@action': 'show'
+  routeParts:
+    node:
+      handler: Neos\Neos\Routing\FrontendNodeRoutePartHandlerInterface
+      options:
+        onlyMatchSiteNodes: true
+  appendExceedingArguments: true
+  httpMethods: ['GET']
+
 -
   name: 'Markdown for Agents - Homepage'
   uriPattern: '{node}index.md'
