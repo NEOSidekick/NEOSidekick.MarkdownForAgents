@@ -31,16 +31,16 @@ final class MarkdownContentNegotiationMiddleware implements MiddlewareInterface
         if ($format === 'html') {
             // Accept-header negotiation: client prefers Markdown, so switch the format.
             if (!$this->acceptHeaderMatcher->prefersMarkdown($request->getHeaderLine('Accept'))) {
-                return $next->handle($request);
+                return $this->withVaryOnAccept($next->handle($request));
             }
 
             $routingResults['@format'] = 'markdown';
 
-            return $next->handle(
+            return $this->withVaryOnAccept($next->handle(
                 $request
                     ->withAttribute(ServerRequestAttributes::ROUTING_RESULTS, $routingResults)
                     ->withHeader('Accept', $this->withHtmlFallbackAcceptHeader($request->getHeaderLine('Accept')))
-            );
+            ));
         }
 
         if ($format === 'markdown') {
@@ -86,6 +86,23 @@ final class MarkdownContentNegotiationMiddleware implements MiddlewareInterface
         }
 
         return $routingResults;
+    }
+
+    /**
+     * The same URL serves HTML or Markdown depending on Accept, so shared caches
+     * must not hand a cached HTML response to a Markdown client (or vice versa).
+     */
+    private function withVaryOnAccept(ResponseInterface $response): ResponseInterface
+    {
+        $varyFields = array_values(array_filter(array_map('trim', explode(',', $response->getHeaderLine('Vary')))));
+        foreach ($varyFields as $varyField) {
+            if ($varyField === '*' || strcasecmp($varyField, 'Accept') === 0) {
+                return $response;
+            }
+        }
+
+        $varyFields[] = 'Accept';
+        return $response->withHeader('Vary', implode(', ', $varyFields));
     }
 
     private function withHtmlFallbackAcceptHeader(string $acceptHeader): string

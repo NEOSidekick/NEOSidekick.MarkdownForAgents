@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NEOSidekick\MarkdownForAgents\Tests\Unit\Http;
 
+use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
 use NEOSidekick\MarkdownForAgents\Http\AcceptHeaderMatcher;
 use NEOSidekick\MarkdownForAgents\Http\MarkdownContentNegotiationMiddleware;
@@ -233,5 +234,90 @@ final class MarkdownContentNegotiationMiddlewareTest extends TestCase
 
         self::assertSame('markdown', $handler->request->getAttribute(ServerRequestAttributes::ROUTING_RESULTS)['@format']);
         self::assertSame('text/html,application/xhtml+xml,*/*;q=0.8', $handler->request->getHeaderLine('Accept'));
+    }
+
+    /**
+     * @test
+     */
+    public function variesHtmlResponsesOfNegotiableRequestsOnAccept(): void
+    {
+        $middleware = new MarkdownContentNegotiationMiddleware(new AcceptHeaderMatcher());
+        $response = $middleware->process($this->frontendNodeRequest('text/html', 'html'), new UnitCapturingRequestHandler());
+
+        self::assertSame('Accept', $response->getHeaderLine('Vary'));
+    }
+
+    /**
+     * @test
+     */
+    public function variesNegotiatedMarkdownResponsesOnAcceptOnlyOnce(): void
+    {
+        $handler = new UnitCapturingRequestHandler(new Response(200, ['Vary' => 'Accept']));
+
+        $middleware = new MarkdownContentNegotiationMiddleware(new AcceptHeaderMatcher());
+        $response = $middleware->process($this->frontendNodeRequest('text/markdown', 'html'), $handler);
+
+        self::assertSame('Accept', $response->getHeaderLine('Vary'));
+    }
+
+    /**
+     * @test
+     */
+    public function appendsAcceptToAnExistingVaryHeader(): void
+    {
+        $handler = new UnitCapturingRequestHandler(new Response(200, ['Vary' => 'Accept-Encoding']));
+
+        $middleware = new MarkdownContentNegotiationMiddleware(new AcceptHeaderMatcher());
+        $response = $middleware->process($this->frontendNodeRequest('text/html', 'html'), $handler);
+
+        self::assertSame('Accept-Encoding, Accept', $response->getHeaderLine('Vary'));
+    }
+
+    /**
+     * @test
+     */
+    public function keepsAWildcardVaryHeader(): void
+    {
+        $handler = new UnitCapturingRequestHandler(new Response(200, ['Vary' => '*']));
+
+        $middleware = new MarkdownContentNegotiationMiddleware(new AcceptHeaderMatcher());
+        $response = $middleware->process($this->frontendNodeRequest('text/html', 'html'), $handler);
+
+        self::assertSame('*', $response->getHeaderLine('Vary'));
+    }
+
+    /**
+     * @test
+     */
+    public function doesNotVaryResponsesOfOtherFormatsOrRoutes(): void
+    {
+        $middleware = new MarkdownContentNegotiationMiddleware(new AcceptHeaderMatcher());
+
+        $sitemapResponse = $middleware->process($this->frontendNodeRequest('text/html', 'xml.sitemap'), new UnitCapturingRequestHandler());
+        self::assertSame('', $sitemapResponse->getHeaderLine('Vary'));
+
+        $assetRequest = (new ServerRequest('GET', 'https://www.neosidekick.com/_asset/example', ['Accept' => 'text/html']))
+            ->withAttribute(ServerRequestAttributes::ROUTING_RESULTS, [
+                '@package' => 'Example.Site',
+                '@controller' => 'AssetProxy',
+                '@action' => 'index',
+                '@format' => 'html',
+            ]);
+        $assetResponse = $middleware->process($assetRequest, new UnitCapturingRequestHandler());
+        self::assertSame('', $assetResponse->getHeaderLine('Vary'));
+    }
+
+    private function frontendNodeRequest(string $accept, string $format): ServerRequest
+    {
+        $request = new ServerRequest('GET', 'https://www.neosidekick.com/example/path', [
+            'Accept' => $accept,
+        ]);
+
+        return $request->withAttribute(ServerRequestAttributes::ROUTING_RESULTS, [
+            '@package' => 'Neos.Neos',
+            '@controller' => 'Frontend\Node',
+            '@action' => 'show',
+            '@format' => $format,
+        ]);
     }
 }
