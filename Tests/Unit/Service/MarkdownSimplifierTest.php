@@ -122,6 +122,28 @@ final class MarkdownSimplifierTest extends UnitTestCase
     /**
      * @test
      */
+    public function keepsEscapedHashMarkersAttachedToTheirBackslash(): void
+    {
+        self::assertSame(
+            "\\# Kapsch TrafficCom\n\n\\## Entity-Links",
+            $this->simplifier->simplify("\\# Kapsch TrafficCom\n\n\\## Entity-Links")
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function deGluesAHeadingFusedToAnEscapedBackslash(): void
+    {
+        self::assertSame(
+            "C:\\\\\n\n## Heading",
+            $this->simplifier->simplify('C:\\\\## Heading')
+        );
+    }
+
+    /**
+     * @test
+     */
     public function keepsHeadingsThatAlreadyStartTheirLine(): void
     {
         self::assertSame(

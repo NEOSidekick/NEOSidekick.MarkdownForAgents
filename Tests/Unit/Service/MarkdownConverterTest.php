@@ -910,6 +910,19 @@ HTML;
         self::assertStringContainsString('FooBar', $converter->convert($html));
     }
 
+    /**
+     * @test
+     */
+    public function keepsMarkdownSyntaxTypedIntoRichTextAsEscapedText(): void
+    {
+        $html = '<p># Kapsch TrafficCom</p><p>## Entity-Links</p><p>- Firma: Kapsch TrafficCom AG</p>';
+
+        self::assertSame(
+            "\\# Kapsch TrafficCom\n\n\\## Entity-Links\n\n\\- Firma: Kapsch TrafficCom AG",
+            $this->createConverter()->convert($html)
+        );
+    }
+
     private function createConverter(bool $keepEmptyAltImages = true): MarkdownConverter
     {
         $this->inject($this->simplifier, 'keepEmptyAltImages', $keepEmptyAltImages);
