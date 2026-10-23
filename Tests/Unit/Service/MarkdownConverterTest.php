@@ -923,6 +923,19 @@ HTML;
         );
     }
 
+    /**
+     * @test
+     */
+    public function keepsAnExplicitBackslashBeforeHashTypedIntoRichText(): void
+    {
+        $html = '<p>\# Title</p><p>prefix \## Section</p>';
+
+        self::assertSame(
+            "\\\\# Title\n\nprefix \\\\## Section",
+            $this->createConverter()->convert($html)
+        );
+    }
+
     private function createConverter(bool $keepEmptyAltImages = true): MarkdownConverter
     {
         $this->inject($this->simplifier, 'keepEmptyAltImages', $keepEmptyAltImages);

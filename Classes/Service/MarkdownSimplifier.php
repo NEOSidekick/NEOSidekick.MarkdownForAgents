@@ -49,8 +49,8 @@ final class MarkdownSimplifier
     {
         return $this->processOutsideFencedCodeBlocks($markdown, function (string $markdown): string {
             // Insert a blank line before a heading that is directly appended to text;
-            // a "#" after an odd number of backslashes is an escaped literal, not a heading
-            $markdown = preg_replace('/([\w]{2}|[^\w\s#\\\\]|(?<!\\\\)(?:\\\\\\\\)+)(#{1,6}\s)/', "$1\n\n$2", $markdown) ?? $markdown;
+            // never after a backslash, as "\#" and "\\#" are literal text, not a glued heading
+            $markdown = preg_replace('/([\w]{2}|[^\w\s#\\\\])(#{1,6}\s)/', "$1\n\n$2", $markdown) ?? $markdown;
 
             // Ensure that every heading is preceded by a blank line unless one already exists
             $markdown = preg_replace('/([^\n])\n(#{1,6}\s.*)$/m', "$1\n\n$2", $markdown) ?? $markdown;

@@ -133,12 +133,40 @@ final class MarkdownSimplifierTest extends UnitTestCase
     /**
      * @test
      */
-    public function deGluesAHeadingFusedToAnEscapedBackslash(): void
+    public function keepsOneTwoAndThreeBackslashesBeforeHashMarkersAsLiteralText(): void
     {
-        self::assertSame(
-            "C:\\\\\n\n## Heading",
-            $this->simplifier->simplify('C:\\\\## Heading')
-        );
+        $markdown = <<<'MARKDOWN'
+\# one
+\\# two
+\\\# three
+prefix \# one
+prefix \\# two
+prefix \\\# three
+MARKDOWN;
+
+        self::assertSame($markdown, $this->simplifier->simplify($markdown));
+    }
+
+    /**
+     * @test
+     */
+    public function keepsEscapedHashMarkersInsideAllCodeForms(): void
+    {
+        $markdown = <<<'MARKDOWN'
+Inline `\# one` and `\\# two`.
+
+~~~md
+\# one
+\\# two
+~~~
+
+Code:
+
+    \# one
+    \\# two
+MARKDOWN;
+
+        self::assertSame($markdown, $this->simplifier->simplify($markdown));
     }
 
     /**
