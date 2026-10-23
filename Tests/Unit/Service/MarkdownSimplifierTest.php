@@ -122,6 +122,56 @@ final class MarkdownSimplifierTest extends UnitTestCase
     /**
      * @test
      */
+    public function keepsEscapedHashMarkersAttachedToTheirBackslash(): void
+    {
+        self::assertSame(
+            "\\# Kapsch TrafficCom\n\n\\## Entity-Links",
+            $this->simplifier->simplify("\\# Kapsch TrafficCom\n\n\\## Entity-Links")
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function keepsOneTwoAndThreeBackslashesBeforeHashMarkersAsLiteralText(): void
+    {
+        $markdown = <<<'MARKDOWN'
+\# one
+\\# two
+\\\# three
+prefix \# one
+prefix \\# two
+prefix \\\# three
+MARKDOWN;
+
+        self::assertSame($markdown, $this->simplifier->simplify($markdown));
+    }
+
+    /**
+     * @test
+     */
+    public function keepsEscapedHashMarkersInsideAllCodeForms(): void
+    {
+        $markdown = <<<'MARKDOWN'
+Inline `\# one` and `\\# two`.
+
+~~~md
+\# one
+\\# two
+~~~
+
+Code:
+
+    \# one
+    \\# two
+MARKDOWN;
+
+        self::assertSame($markdown, $this->simplifier->simplify($markdown));
+    }
+
+    /**
+     * @test
+     */
     public function keepsHeadingsThatAlreadyStartTheirLine(): void
     {
         self::assertSame(
