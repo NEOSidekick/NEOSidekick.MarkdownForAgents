@@ -154,7 +154,8 @@ llms.txt** in the SEO tab):
   appended under a `## Pages` heading (translatable) as a nested Markdown link list of
   that many levels, starting at the site node. Menu entries that are pure groupings
   (flyout containers with children but no own page) are rendered as plain labels, their
-  pages as links. Leave the dropdown empty to omit the navigation.
+  pages as links. Leave the dropdown empty to omit the navigation. When the menu has no
+  entries, for example on a one-page site, the heading is omitted as well.
 
 So a filled-out `llms.txt` renders as:
 
