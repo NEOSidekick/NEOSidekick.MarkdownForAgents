@@ -3,6 +3,7 @@ prototype(NEOSidekick.MarkdownForAgents:LlmsTxt) < prototype(Neos.Fusion:Compone
     metaDescription = ${q(site).property('metaDescription')}
     navigationLevels = ${q(site).property('llmsTxtNavigationLevels')}
     navigationHeading = ${Translation.translate('llmsTxtNavigationHeading', 'Pages', [], 'Markdown', 'NEOSidekick.MarkdownForAgents')}
+    navigationList = NEOSidekick.MarkdownForAgents:LlmsTxtNavigation
 
     bodyHtml = NEOSidekick.MarkdownForAgents:HtmlConvertUris {
         value = ${q(site).property('llmsTxt') || ''}
@@ -39,9 +40,10 @@ prototype(NEOSidekick.MarkdownForAgents:LlmsTxt) < prototype(Neos.Fusion:Compone
 
             navigation = Neos.Fusion:Join {
                 @if.hasLevels = ${props.navigationLevels}
+                @if.hasItems = ${props.navigationList != ''}
                 @glue = ${String.chr(10) + String.chr(10)}
                 heading = ${'## ' + props.navigationHeading}
-                list = NEOSidekick.MarkdownForAgents:LlmsTxtNavigation
+                list = ${props.navigationList}
             }
 
             @process.finalNewline = ${String.trim(value) + String.chr(10)}
