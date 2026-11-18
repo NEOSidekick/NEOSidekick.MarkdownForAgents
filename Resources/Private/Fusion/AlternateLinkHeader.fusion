@@ -9,7 +9,7 @@ prototype(Neos.Neos:Page) {
         # Out-of-session previews (e.g. NEOSidekick.AiAssistant) render other workspaces outside the
         # backend. Neos links such nodes with the "preview" action, which has no markdown or llms.txt
         # route, and they have no public alternate to advertise.
-        @if.isLiveWorkspace = ${documentNode.context.workspace.publicWorkspace}
+        @if.isPublicWorkspace = ${documentNode.context.workspace.publicWorkspace}
 
         @glue = ', '
 
