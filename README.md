@@ -288,6 +288,9 @@ The **HTML** response advertises its Markdown variant as an alternate:
 Link: <https://example.com/company/about-us.md>; rel="alternate"; type="text/markdown"
 ```
 
+Pages without a public URL get no agent links: hidden pages omit the Markdown alternate,
+and renders of a non-live workspace (e.g. out-of-session previews) omit both headers.
+
 The **Markdown** response points back to the canonical HTML page:
 
 ```http

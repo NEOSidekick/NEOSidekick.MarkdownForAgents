@@ -6,6 +6,10 @@ prototype(Neos.Neos:Page) {
         # inside the exception handler. An error response has no markdown alternate to advertise
         # anyway, so skip the headers there. "statusCode" is only in context in that view.
         @if.isNotErrorResponse = ${statusCode == null}
+        # Out-of-session previews (e.g. NEOSidekick.AiAssistant) render other workspaces outside the
+        # backend. Neos links such nodes with the "preview" action, which has no markdown or llms.txt
+        # route, and they have no public alternate to advertise.
+        @if.isLiveWorkspace = ${documentNode.context.workspace.publicWorkspace}
 
         @glue = ', '
 
@@ -14,6 +18,8 @@ prototype(Neos.Neos:Page) {
 
         markdownAlternate = Neos.Neos:NodeUri {
             @if.notInBackend = ${!documentNode.context.inBackend}
+            # Hidden documents are linked with the "preview" action as well, see above.
+            @if.isVisible = ${!documentNode.hidden}
             node = ${documentNode}
             absolute = true
             format = 'markdown'
